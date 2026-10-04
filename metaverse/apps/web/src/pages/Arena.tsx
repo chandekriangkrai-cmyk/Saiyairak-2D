@@ -76,6 +76,7 @@ export default function Arena() {
   const [classroomMission, setClassroomMission] = useState<string | null>(null);
   const [quizOpen, setQuizOpen] = useState(false);
   const [quizAnswered, setQuizAnswered] = useState(false);
+  const [quizStreak, setQuizStreak] = useState(0);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -578,14 +579,19 @@ export default function Arena() {
           <div className="w-[min(30rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
             <div className="text-xs font-semibold uppercase tracking-wide text-coin">Mini Mission</div>
             <h2 className="mt-2 text-xl font-bold">What is “book”?</h2>
-            <p className="mt-1 text-sm text-fog">เลือกคำแปลที่ถูกต้องเพื่อรับ 20 XP</p>
+            <p className="mt-1 text-sm text-fog">เลือกคำแปลที่ถูกต้องเพื่อรับ XP · 🔥 Streak {quizStreak}</p>
             <div className="mt-4 grid gap-2">
               {["หนังสือ", "โต๊ะ", "กระดาน"].map((answer) => (
                 <button key={answer} type="button" disabled={quizAnswered} className={`${button.secondary} min-h-12 w-full px-4 text-left`} onClick={() => {
                   if (quizAnswered) return;
                   setQuizAnswered(true);
-                  if (answer === "หนังสือ") setClassroomScore((score) => score + 20);
-                  setClassroomActivity(answer === "หนังสือ" ? "ถูกต้อง! +20 XP" : "ยังไม่ถูก ลองภารกิจถัดไป");
+                  if (answer === "หนังสือ") {
+                    setQuizStreak((streak) => streak + 1);
+                    setClassroomScore((score) => score + (quizStreak >= 2 ? 30 : 20));
+                  } else {
+                    setQuizStreak(0);
+                  }
+                  setClassroomActivity(answer === "หนังสือ" ? `ถูกต้อง! +${quizStreak >= 2 ? 30 : 20} XP` : "ยังไม่ถูก ลองภารกิจถัดไป");
                 }}>{answer}</button>
               ))}
             </div>
