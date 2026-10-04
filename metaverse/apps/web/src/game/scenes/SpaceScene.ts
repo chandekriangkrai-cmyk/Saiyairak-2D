@@ -315,7 +315,6 @@ export class SpaceScene extends Phaser.Scene {
 
     if (target.type === "tablet") {
       this.pauseMovement();
-      EventBus.emit(SpaceEvent.SchoolTimeLearningApp);
       return;
     }
 
