@@ -1,0 +1,32 @@
+name: Refresh Bun Lockfile
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: metaverse
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install
+      - name: Commit lockfile if changed
+        working-directory: .
+        run: |
+          if git diff --quiet -- metaverse/bun.lock; then
+            echo "bun.lock is already compatible with Bun 1.3.14"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add metaverse/bun.lock
+          git commit -m "chore: refresh bun lockfile for production runtime"
+          git push
