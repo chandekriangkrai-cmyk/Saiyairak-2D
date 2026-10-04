@@ -4,7 +4,6 @@ import {
   isWhiteboardEnabled,
   isHideAndSeekEnabled,
 } from "@repo/types";
-import { CLASSROOM_V2_ZONES } from "./classroomV2";
 
 export const TILE_SIZE = 32;
 
@@ -98,7 +97,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     collisionPath: "/assets/spaces/classroom/collision.json",
     tileSize: 48,
     spawnTile: { x: 7, y: 7 },
-    zones: CLASSROOM_V2_ZONES.map((zone) => ({ id: zone.id, rect: zone.rect })),
+    zones: [],
   },
   "hide-and-seek": {
     id: "hide-and-seek",

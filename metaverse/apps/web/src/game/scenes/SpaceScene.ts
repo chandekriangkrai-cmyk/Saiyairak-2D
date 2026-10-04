@@ -4,7 +4,6 @@ import type { SpaceConfig, TileCoord } from "../config/spaces";
 import { CollisionGrid, type CollisionRows } from "../systems/CollisionGrid";
 import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
-import { CLASSROOM_V2_OBJECTS } from "../config/classroomV2";
 import type { CollisionEditor } from "../systems/CollisionEditor";
 import { applyClassroomFurnitureOrientation } from "../systems/ClassroomFurnitureOrientation";
 import { Player } from "../entities/Player";
@@ -24,14 +23,11 @@ const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
 const TABLET_TILE: TileCoord = { x: 10, y: 3 };
 
 type InteractionTarget = TileCoord & {
-  type: "tablet" | "classroom-object";
+  type: "tablet";
   label: string;
-  objectId?: string;
-  interaction?: string;
 };
 
 export class SpaceScene extends Phaser.Scene {
-  private lastClassroomInteractionAt = 0;
   protected spaceConfig!: SpaceConfig;
   private collisionSource: CollisionRows | null = null;
 
@@ -83,19 +79,7 @@ export class SpaceScene extends Phaser.Scene {
 
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
-      for (const object of CLASSROOM_V2_OBJECTS) {
-        const w = object.size?.w ?? 1;
-        const h = object.size?.h ?? 1;
-        if (object.blocked) {
-          for (let y = 0; y < h; y += 1) {
-            for (let x = 0; x < w; x += 1) {
-              this.grid.setBlocked(object.tile.x + x, object.tile.y + y, true);
-            }
-          }
-        }
-      }
       applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
-      this.renderClassroomV2(tileSize);
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
@@ -200,41 +184,6 @@ export class SpaceScene extends Phaser.Scene {
     }
   }
 
-
-  private renderClassroomV2(tileSize: number): void {
-    const textureKey = "classroom-v2-primary-0";
-    if (!this.textures.exists(textureKey)) return;
-
-    // The imported CC0 sheet is intentionally kept as source art. We crop
-    // selected furniture pieces at runtime so no second atlas/metadata format
-    // is required and the gameplay coordinates stay independent of filenames.
-    const crops: Record<string, { x: number; y: number; w: number; h: number }> = {
-      board: { x: 750, y: 45, w: 195, h: 155 },
-      bookshelf: { x: 15, y: 150, w: 610, h: 260 },
-      "student-desk": { x: 445, y: 845, w: 145, h: 125 },
-      "teacher-desk": { x: 250, y: 675, w: 170, h: 135 },
-      computer: { x: 640, y: 300, w: 180, h: 100 },
-    };
-
-    for (const object of CLASSROOM_V2_OBJECTS) {
-      const crop = crops[object.kind];
-      if (!crop) continue;
-      const sprite = this.add
-        .image((object.tile.x + (object.size?.w ?? 1) / 2) * tileSize,
-          (object.tile.y + (object.size?.h ?? 1) / 2) * tileSize,
-          textureKey)
-        .setOrigin(0.5)
-        .setCrop(crop.x, crop.y, crop.w, crop.h)
-        .setDepth(DEPTH_SPACE + 1);
-
-      const targetW = Math.max(tileSize * (object.size?.w ?? 1), crop.w * 0.55);
-      const targetH = Math.max(tileSize * (object.size?.h ?? 1), crop.h * 0.55);
-      sprite.setDisplaySize(targetW, targetH);
-      sprite.setData("classroomObjectId", object.id);
-      sprite.setData("interaction", object.interaction ?? null);
-    }
-  }
-
   private createTablet(tileSize: number): void {
     const outer = this.add
       .rectangle(0, 0, 34, 26, 0x111827, 1)
@@ -307,28 +256,9 @@ export class SpaceScene extends Phaser.Scene {
     const target = this.interactionTarget;
     if (!target) return;
 
-    if (Date.now() - this.lastClassroomInteractionAt >= 350) {
-      this.lastClassroomInteractionAt = Date.now();
-      EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
-    }
+    EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
     this.autosave(true);
-
-    if (target.type === "tablet") {
-      this.pauseMovement();
-      return;
-    }
-
-    // Classroom furniture interactions are intentionally lightweight until
-    // their dedicated learning activities are wired into the UI. Keep the
-    // player in control instead of opening the tablet app for every object.
-    this.interactionHint
-      .setText(`✓ ${target.label}`)
-      .setVisible(true);
-    this.time.delayedCall(900, () => {
-      if (this.interactionTarget?.objectId === target.objectId) {
-        this.updateInteractionTarget();
-      }
-    });
+    this.pauseMovement();
   }
 
   private updateInteractionTarget(): void {
@@ -358,29 +288,6 @@ export class SpaceScene extends Phaser.Scene {
       return;
     }
 
-    const object = CLASSROOM_V2_OBJECTS.find((candidate) => {
-      const w = candidate.size?.w ?? 1;
-      const h = candidate.size?.h ?? 1;
-      return (
-        front.x >= candidate.tile.x &&
-        front.x < candidate.tile.x + w &&
-        front.y >= candidate.tile.y &&
-        front.y < candidate.tile.y + h &&
-        Boolean(candidate.interaction)
-      );
-    });
-
-    if (object?.interaction) {
-      this.setCurrentInteractionTarget({
-        ...front,
-        type: "classroom-object",
-        label: this.classroomInteractionLabel(object.interaction),
-        objectId: object.id,
-        interaction: object.interaction,
-      });
-      return;
-    }
-
     this.setCurrentInteractionTarget(null);
   }
 
@@ -392,27 +299,8 @@ export class SpaceScene extends Phaser.Scene {
       return;
     }
     this.interactionHint
-      .setText(`กด Enter / Space เพื่อ${target.label}`)
+      .setText("กด Enter / Space หรือปุ่มโต้ตอบ เพื่อเปิดแท็บเล็ตภาษาอังกฤษ")
       .setVisible(true);
-  }
-
-  private classroomInteractionLabel(interaction: string): string {
-    switch (interaction) {
-      case "open-board":
-        return "เปิดกระดาน";
-      case "teacher-zone":
-        return "เข้าพื้นที่ครู";
-      case "student-seat":
-        return "นั่งโต๊ะเรียน";
-      case "bookshelf":
-        return "เปิดชั้นหนังสือ";
-      case "computer":
-        return "ใช้คอมพิวเตอร์";
-      case "exit-classroom":
-        return "ออกจากห้องเรียน";
-      default:
-        return "โต้ตอบ";
-    }
   }
 
   private pauseMovement(): void {
