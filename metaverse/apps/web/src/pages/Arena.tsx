@@ -73,6 +73,7 @@ export default function Arena() {
   const [classroomAction, setClassroomAction] = useState<string | null>(null);
   const [classroomScore, setClassroomScore] = useState(0);
   const [classroomActivity, setClassroomActivity] = useState<string | null>(null);
+  const [classroomMission, setClassroomMission] = useState<string | null>(null);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -116,6 +117,7 @@ export default function Arena() {
       if (!activity) return;
       setClassroomAction(target.label);
       setClassroomActivity(activity.prompt);
+      setClassroomMission(activity.points > 0 ? `ภารกิจ: ทำกิจกรรมให้สำเร็จเพื่อรับ ${activity.points} XP` : null);
       if (activity.points > 0) {
         setClassroomScore((score) => score + activity.points);
       }
@@ -552,6 +554,9 @@ export default function Arena() {
           <div className="text-xs font-semibold uppercase tracking-wide text-coin">Classroom</div>
           <div className="mt-1 text-base font-semibold">{classroomAction}</div>
           <div className="mt-1 text-xs text-fog">{classroomActivity ?? "กิจกรรมห้องเรียน"}</div>
+          {classroomMission && (
+            <div className="mt-2 rounded-xl border border-line bg-night/60 p-2 text-xs text-moonlight">🎯 {classroomMission}</div>
+          )}
           {classroomScore > 0 && (
             <div className="mt-2 text-sm font-bold text-coin">⭐ XP ห้องเรียน: {classroomScore}</div>
           )}
