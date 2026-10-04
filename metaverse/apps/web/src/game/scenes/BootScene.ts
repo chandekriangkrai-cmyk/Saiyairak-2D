@@ -50,9 +50,11 @@ export class BootScene extends Phaser.Scene {
     if (imageOk) this.load.image(SPACE_TEXTURE, config.imagePath);
     if (classroomV2) {
       for (const [index, path] of CLASSROOM_V2_ASSETS.classroom.entries()) {
+        if (!(await probeAsset(path, "image/"))) continue;
         this.load.image(`classroom-v2-primary-${index}`, path);
       }
       for (const [index, path] of CLASSROOM_V2_ASSETS.classroomSecond.entries()) {
+        if (!(await probeAsset(path, "image/"))) continue;
         this.load.image(`classroom-v2-secondary-${index}`, path);
       }
     }
