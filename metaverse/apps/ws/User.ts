@@ -10,41 +10,27 @@ import {
 import client from "@repo/db/client";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_ALGORITHM, JWT_PASSWORD } from "./config";
-import {
-  centerSpawn,
-  isBlocked,
-  loadCollision,
-  type CollisionData,
-} from "./collision";
+import { centerSpawn, isBlocked, loadCollision, type CollisionData } from "./collision";
 import { loadHideSeekConfig } from "./hideSeekConfig";
 import { logger } from "./logger";
 import type { Logger } from "@repo/logger";
 import z from "zod";
 
 const JOIN_TIMEOUT_MS = 10_000;
-const JoinPayloadSchema = z.object({
-  spaceId: z.string().min(1).max(64),
-  token: z.string().min(1).max(4096),
-});
-
+const POSITION_SAVE_DEBOUNCE_MS = 250;
+const JoinPayloadSchema = z.object({ spaceId: z.string().min(1).max(64), token: z.string().min(1).max(4096) });
 const MAX_CHAT_LENGTH = 500;
 const CHAT_WINDOW_MS = 10_000;
 const CHAT_MAX_IN_WINDOW = 10;
 const MAX_WHITEBOARD_ELEMENTS = 5_000;
 const MAX_WHITEBOARD_BYTES = 1_500_000;
 
-type Payload<T extends IncomingMessage["type"]> = Extract<
-  IncomingMessage,
-  { type: T }
->["payload"];
+type Payload<T extends IncomingMessage["type"]> = Extract<IncomingMessage, { type: T }>["payload"];
 
 function getRandomString(length: number) {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
+  for (let i = 0; i < length; i++) result += characters.charAt(Math.floor(Math.random() * characters.length));
   return result;
 }
 
@@ -62,17 +48,13 @@ export class User {
   private ws: WebSocket;
   private chatTimestamps: number[] = [];
   private joinTimeout: ReturnType<typeof setTimeout> | undefined;
+  private positionSaveTimer: ReturnType<typeof setTimeout> | undefined;
   private joining = false;
   private closed = false;
   private log: Logger;
 
-  public get joinedSpaceId(): string | undefined {
-    return this.spaceId;
-  }
-
-  public get isClosed(): boolean {
-    return this.closed;
-  }
+  public get joinedSpaceId(): string | undefined { return this.spaceId; }
+  public get isClosed(): boolean { return this.closed; }
 
   constructor(ws: WebSocket) {
     this.id = getRandomString(10);
@@ -97,39 +79,19 @@ export class User {
   initHandlers() {
     this.ws.on("message", async (data: any) => {
       let parsedData: IncomingMessage;
-      try {
-        parsedData = JSON.parse(data.toString()) as IncomingMessage;
-      } catch {
-        this.log.debug("discarded unparseable frame");
-        return;
-      }
-
+      try { parsedData = JSON.parse(data.toString()) as IncomingMessage; }
+      catch { this.log.debug("discarded unparseable frame"); return; }
       try {
         switch (parsedData.type) {
-          case "join":
-            await this.handleJoin(parsedData.payload);
-            break;
-          case "move":
-            this.handleMove(parsedData.payload);
-            break;
-          case "chat":
-            this.handleChat(parsedData.payload);
-            break;
-          case "whiteboard-update":
-            this.handleWhiteboardUpdate(parsedData.payload);
-            break;
-          case "hide-seek-start":
-            this.handleHideSeekStart();
-            break;
-          case "hide-seek-tag":
-            this.handleHideSeekTag(parsedData.payload);
-            break;
+          case "join": await this.handleJoin(parsedData.payload); break;
+          case "move": this.handleMove(parsedData.payload); break;
+          case "chat": this.handleChat(parsedData.payload); break;
+          case "whiteboard-update": this.handleWhiteboardUpdate(parsedData.payload); break;
+          case "hide-seek-start": this.handleHideSeekStart(); break;
+          case "hide-seek-tag": this.handleHideSeekTag(parsedData.payload); break;
         }
       } catch (err) {
-        this.log.error(
-          { err, messageType: parsedData.type },
-          "failed to handle ws message",
-        );
+        this.log.error({ err, messageType: parsedData.type }, "failed to handle ws message");
       }
     });
   }
@@ -137,45 +99,29 @@ export class User {
   private async handleJoin(payload: Payload<"join">): Promise<void> {
     if (this.spaceId || this.joining || this.closed) return;
     this.joining = true;
-    try {
-      await this.join(payload);
-    } finally {
-      this.joining = false;
-    }
+    try { await this.join(payload); } finally { this.joining = false; }
   }
 
   private async join(payload: Payload<"join">): Promise<void> {
     const parsed = JoinPayloadSchema.safeParse(payload);
-    if (!parsed.success) {
-      this.log.debug("rejected join with a malformed payload");
-      this.ws.close(WS_CLOSE_UNAUTHORIZED, "unauthorized");
-      return;
-    }
+    if (!parsed.success) { this.ws.close(WS_CLOSE_UNAUTHORIZED, "unauthorized"); return; }
     const { spaceId, token } = parsed.data;
 
     let userId: string | undefined;
     try {
-      const claims = jwt.verify(token, JWT_PASSWORD, {
-        algorithms: [JWT_ALGORITHM],
-      }) as JwtPayload;
+      const claims = jwt.verify(token, JWT_PASSWORD, { algorithms: [JWT_ALGORITHM] }) as JwtPayload;
       if (typeof claims.userId === "string") userId = claims.userId;
-    } catch {
-      userId = undefined;
-    }
-    if (!userId) {
-      this.log.warn({ spaceId }, "rejected join with an unusable token");
-      this.ws.close(WS_CLOSE_UNAUTHORIZED, "unauthorized");
-      return;
-    }
+    } catch { userId = undefined; }
+    if (!userId) { this.ws.close(WS_CLOSE_UNAUTHORIZED, "unauthorized"); return; }
     this.userId = userId;
 
-    const space = await client.space.findFirst({ where: { id: spaceId } });
+    const [space, savedUser] = await Promise.all([
+      client.space.findFirst({ where: { id: spaceId } }),
+      client.user.findUnique({ where: { id: userId }, select: { lastSpaceId: true, lastX: true, lastY: true } }),
+    ]);
     if (this.closed) return;
-    if (!space) {
-      this.log.debug({ spaceId }, "rejected join for an unknown space");
-      this.ws.close();
-      return;
-    }
+    if (!space) { this.ws.close(); return; }
+
     this.clearJoinTimeout();
     this.spaceId = spaceId;
     this.log = this.log.child({ userId, spaceId });
@@ -183,53 +129,56 @@ export class User {
     this.spaceHeight = space.height;
     this.collision = loadCollision(space.mapImage);
     this.whiteboardEnabled = isWhiteboardEnabled(space.mapImage);
-    this.canEditWhiteboard =
-      this.whiteboardEnabled && space.creatorId === this.userId;
+    this.canEditWhiteboard = this.whiteboardEnabled && space.creatorId === this.userId;
 
     const spawn = centerSpawn(this.collision, space.width, space.height);
-    this.x = spawn.x;
-    this.y = spawn.y;
+    const savedIsValid = savedUser?.lastSpaceId === spaceId &&
+      Number.isInteger(savedUser.lastX) && Number.isInteger(savedUser.lastY) &&
+      savedUser.lastX! >= 0 && savedUser.lastX! < space.width &&
+      savedUser.lastY! >= 0 && savedUser.lastY! < space.height &&
+      !isBlocked(this.collision, savedUser.lastX!, savedUser.lastY!);
+    this.x = savedIsValid ? savedUser.lastX! : spawn.x;
+    this.y = savedIsValid ? savedUser.lastY! : spawn.y;
+
     const hideSeekEnabled = isHideAndSeekEnabled(space.mapImage);
-    const hideSeekConfig = hideSeekEnabled
-      ? loadHideSeekConfig(space.mapImage)
-      : null;
-    if (
-      hideSeekEnabled &&
-      (!hideSeekConfig ||
-        !this.collision ||
-        hideSeekConfig.grid.cols !== space.width ||
-        hideSeekConfig.grid.rows !== space.height ||
-        this.collision.cols !== space.width ||
-        this.collision.rows !== space.height)
-    ) {
-      this.log.error(
-        { spaceId },
-        "invalid hide-and-seek assets, refusing to admit player",
-      );
+    const hideSeekConfig = hideSeekEnabled ? loadHideSeekConfig(space.mapImage) : null;
+    if (hideSeekEnabled && (!hideSeekConfig || !this.collision || hideSeekConfig.grid.cols !== space.width || hideSeekConfig.grid.rows !== space.height || this.collision.cols !== space.width || this.collision.rows !== space.height)) {
       this.spaceId = undefined;
       this.ws.close();
       return;
     }
-    RoomManager.getInstance().evictPreviousSessions(spaceId, this);
-    RoomManager.getInstance().addUser(spaceId, this, {
-      hideSeekConfig,
-      collision: this.collision,
-      creatorId: space.creatorId,
-    });
 
-    this.send({
-      type: "space-joined",
-      payload: {
-        spawn: { x: this.x, y: this.y },
-        users: RoomManager.getInstance().getPresence(spaceId, this.id),
-        visibleUsers: RoomManager.getInstance().getVisibleUsers(spaceId, this),
-        whiteboard: this.whiteboardEnabled
-          ? RoomManager.getInstance().getWhiteboard(spaceId)
-          : null,
-      },
-    });
+    RoomManager.getInstance().evictPreviousSessions(spaceId, this);
+    RoomManager.getInstance().addUser(spaceId, this, { hideSeekConfig, collision: this.collision, creatorId: space.creatorId });
+    this.send({ type: "space-joined", payload: {
+      spawn: { x: this.x, y: this.y },
+      users: RoomManager.getInstance().getPresence(spaceId, this.id),
+      visibleUsers: RoomManager.getInstance().getVisibleUsers(spaceId, this),
+      whiteboard: this.whiteboardEnabled ? RoomManager.getInstance().getWhiteboard(spaceId) : null,
+    }});
     RoomManager.getInstance().announceJoined(this, spaceId);
-    this.log.debug({ hideSeekEnabled }, "player joined space");
+    this.log.debug({ hideSeekEnabled, restored: savedIsValid }, "player joined space");
+  }
+
+  private queuePositionSave(): void {
+    if (!this.userId || !this.spaceId || this.closed) return;
+    if (this.positionSaveTimer !== undefined) return;
+    this.positionSaveTimer = setTimeout(() => {
+      this.positionSaveTimer = undefined;
+      void this.persistPosition();
+    }, POSITION_SAVE_DEBOUNCE_MS);
+  }
+
+  private async persistPosition(): Promise<void> {
+    if (!this.userId || !this.spaceId) return;
+    try {
+      await client.user.update({
+        where: { id: this.userId },
+        data: { lastSpaceId: this.spaceId, lastX: this.x, lastY: this.y },
+      });
+    } catch (err) {
+      this.log.warn({ err }, "failed to persist player position");
+    }
   }
 
   private handleMove(payload: Payload<"move">): void {
@@ -238,110 +187,52 @@ export class User {
     if (!Number.isInteger(moveX) || !Number.isInteger(moveY)) return;
     const xDisplacement = Math.abs(this.x - moveX);
     const yDisplacement = Math.abs(this.y - moveY);
-    const insideBounds =
-      moveX >= 0 &&
-      moveX < this.spaceWidth &&
-      moveY >= 0 &&
-      moveY < this.spaceHeight;
-
-    const isSingleStep =
-      (xDisplacement === 1 && yDisplacement === 0) ||
-      (xDisplacement === 0 && yDisplacement === 1);
-
-    if (
-      insideBounds &&
-      isSingleStep &&
-      RoomManager.getInstance().canMove(this, this.spaceId) &&
-      !isBlocked(this.collision, moveX, moveY)
-    ) {
+    const insideBounds = moveX >= 0 && moveX < this.spaceWidth && moveY >= 0 && moveY < this.spaceHeight;
+    const isSingleStep = (xDisplacement === 1 && yDisplacement === 0) || (xDisplacement === 0 && yDisplacement === 1);
+    if (insideBounds && isSingleStep && RoomManager.getInstance().canMove(this, this.spaceId) && !isBlocked(this.collision, moveX, moveY)) {
       this.x = moveX;
       this.y = moveY;
+      this.queuePositionSave();
       RoomManager.getInstance().publishMovement(this, this.spaceId);
       return;
     }
-
-    this.send({
-      type: "movement-rejected",
-      payload: { x: this.x, y: this.y },
-    });
+    this.send({ type: "movement-rejected", payload: { x: this.x, y: this.y } });
   }
 
   private handleChat(payload: Payload<"chat">): void {
-    if (!this.userId || !this.spaceId) return;
-    if (typeof payload.text !== "string") return;
+    if (!this.userId || !this.spaceId || typeof payload.text !== "string") return;
     const text = payload.text.trim().slice(0, MAX_CHAT_LENGTH);
     if (!text) return;
-
     const now = Date.now();
-    this.chatTimestamps = this.chatTimestamps.filter(
-      (t) => now - t < CHAT_WINDOW_MS,
-    );
+    this.chatTimestamps = this.chatTimestamps.filter((t) => now - t < CHAT_WINDOW_MS);
     if (this.chatTimestamps.length >= CHAT_MAX_IN_WINDOW) return;
     this.chatTimestamps.push(now);
-
-    RoomManager.getInstance().broadcastChat(
-      { id: this.id, userId: this.userId, text, at: now },
-      this,
-      this.spaceId,
-    );
+    RoomManager.getInstance().broadcastChat({ id: this.id, userId: this.userId, text, at: now }, this, this.spaceId);
   }
 
-  private handleHideSeekStart(): void {
-    if (!this.spaceId) return;
-    RoomManager.getInstance().startHideSeek(this, this.spaceId);
-  }
-
-  private handleHideSeekTag(payload: Payload<"hide-seek-tag">): void {
-    if (!this.spaceId || typeof payload.targetId !== "string") return;
-    RoomManager.getInstance().tagHideSeek(this, this.spaceId, payload.targetId);
-  }
+  private handleHideSeekStart(): void { if (this.spaceId) RoomManager.getInstance().startHideSeek(this, this.spaceId); }
+  private handleHideSeekTag(payload: Payload<"hide-seek-tag">): void { if (this.spaceId && typeof payload.targetId === "string") RoomManager.getInstance().tagHideSeek(this, this.spaceId, payload.targetId); }
 
   private handleWhiteboardUpdate(payload: Payload<"whiteboard-update">): void {
     if (!this.spaceId || !this.canEditWhiteboard) return;
-    if (
-      !Array.isArray(payload.elements) ||
-      payload.elements.length > MAX_WHITEBOARD_ELEMENTS ||
-      payload.elements.some(
-        (element) =>
-          element === null ||
-          typeof element !== "object" ||
-          Array.isArray(element),
-      )
-    ) {
-      return;
-    }
-
-    const serialized = JSON.stringify(payload.elements);
-    if (serialized.length > MAX_WHITEBOARD_BYTES) return;
-
-    const scene = RoomManager.getInstance().updateWhiteboard(
-      this.spaceId,
-      payload.elements,
-    );
-    RoomManager.getInstance().broadcast(
-      { type: "whiteboard-update", payload: scene },
-      this,
-      this.spaceId,
-    );
+    if (!Array.isArray(payload.elements) || payload.elements.length > MAX_WHITEBOARD_ELEMENTS || payload.elements.some((element) => element === null || typeof element !== "object" || Array.isArray(element))) return;
+    if (JSON.stringify(payload.elements).length > MAX_WHITEBOARD_BYTES) return;
+    const scene = RoomManager.getInstance().updateWhiteboard(this.spaceId, payload.elements);
+    RoomManager.getInstance().broadcast({ type: "whiteboard-update", payload: scene }, this, this.spaceId);
   }
 
-  public evict(code: number, reason: string): void {
-    this.destroy();
-    this.ws.close(code, reason);
-  }
+  public evict(code: number, reason: string): void { this.destroy(); this.ws.close(code, reason); }
 
   destroy() {
     if (this.closed) return;
     this.closed = true;
     this.clearJoinTimeout();
+    if (this.positionSaveTimer !== undefined) { clearTimeout(this.positionSaveTimer); this.positionSaveTimer = undefined; }
     if (!this.spaceId || !this.userId) return;
+    void this.persistPosition();
     RoomManager.getInstance().removeUser(this, this.spaceId);
     this.spaceId = undefined;
   }
 
-  send(payload: OutgoingMessage) {
-    if (this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(payload));
-    }
-  }
+  send(payload: OutgoingMessage) { if (this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(payload)); }
 }
