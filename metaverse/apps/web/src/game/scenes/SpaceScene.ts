@@ -158,7 +158,7 @@ export class SpaceScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    this.movement.update(this.readDirection());
+    this.movement.update(this.readDirection(), delta);
     this.updateInteractionTarget();
     this.autosave();
     this.cameraController.update(delta);
