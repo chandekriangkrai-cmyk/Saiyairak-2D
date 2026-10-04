@@ -7,7 +7,20 @@ import type { TileCoord, TileRect } from "./spaces";
  * Keep gameplay coordinates independent from sprite filenames so the art pack
  * can be replaced/reorganized without rewriting movement or interaction code.
  */
-export const CLASSROOM_V2_ASSET_ROOT = "/assets/classroom-v2";
+export const CLASSROOM_V2_ASSET_ROOT =
+  "/assets/classroom-v2/source/2dClassroomAssetPackByStyloo";
+
+/** Curated pack paths. Keep these explicit so missing/renamed art fails visibly
+ * instead of silently falling back to placeholder atlas names. */
+export const CLASSROOM_V2_ASSETS = {
+  classroom: Array.from({ length: 8 }, (_, i) =>
+    `${CLASSROOM_V2_ASSET_ROOT}/Classroom/Classroom First Spritesheet ${i + 1}.png`,
+  ),
+  classroomSecond: Array.from({ length: 8 }, (_, i) =>
+    `${CLASSROOM_V2_ASSET_ROOT}/Classroom/Classroom Second Spritesheet ${i + 1}.png`,
+  ),
+  tiling: `${CLASSROOM_V2_ASSET_ROOT}/WallFloorDoor second version tiling`,
+} as const;
 
 export type ClassroomObjectKind =
   | "board"
@@ -60,8 +73,6 @@ export const CLASSROOM_V2_ZONES: ClassroomZone[] = [
 ];
 
 export const CLASSROOM_V2_SPRITES = {
-  floor: `${CLASSROOM_V2_ASSET_ROOT}/floor.png`,
-  walls: `${CLASSROOM_V2_ASSET_ROOT}/walls.png`,
-  objects: `${CLASSROOM_V2_ASSET_ROOT}/objects.png`,
-  decorations: `${CLASSROOM_V2_ASSET_ROOT}/decorations.png`,
+  primary: CLASSROOM_V2_ASSETS.classroom[0],
+  secondary: CLASSROOM_V2_ASSETS.classroomSecond[0],
 } as const;
