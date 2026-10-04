@@ -62,7 +62,13 @@ const templateMaps = [
   hideAndSeekMap,
 ];
 
-const OFFICIAL_CODE = "LIBRARY";
+const officialSpaces = [
+  { code: "LIBRARY", map: libraryMap },
+  { code: "HOUSE01", map: multiroomHouseMap },
+  { code: "OFFICE1", map: virtualOfficeMap },
+  { code: "CLASS01", map: classroomMap },
+  { code: "FOREST1", map: hideAndSeekMap },
+];
 
 async function main() {
   for (const avatar of avatars) {
@@ -89,47 +95,59 @@ async function main() {
     maps.set(template.name, map);
   }
 
-  const map = maps.get(libraryMap.name)!;
-  const spaceData = {
-    name: libraryMap.name,
-    width: map.width,
-    height: map.height,
-    thumbnail: map.thumbnail,
-    mapImage: map.mapImage,
-  };
-
-  const official = await client.space.findUnique({
-    where: { code: OFFICIAL_CODE },
+  let system = await client.user.findUnique({
+    where: { username: "system" },
   });
-  if (official) {
-    await client.space.update({
-      where: { code: OFFICIAL_CODE },
-      data: spaceData,
-    });
-    logger.info({ code: OFFICIAL_CODE }, "official space updated");
-  } else {
-    let system = await client.user.findUnique({
-      where: { username: "system" },
-    });
-    if (!system) {
-      system = await client.user.create({
-        data: {
-          username: "system",
-          password: "!locked",
-          role: "Admin",
-        },
-      });
-    }
-
-    await client.space.create({
+  if (!system) {
+    system = await client.user.create({
       data: {
-        ...spaceData,
-        code: OFFICIAL_CODE,
-        official: true,
-        creatorId: system.id,
+        username: "system",
+        password: "!locked",
+        role: "Admin",
       },
     });
-    logger.info({ code: OFFICIAL_CODE }, "official space created");
+  }
+
+  // Keep every built-in learning space available from the dashboard.
+  // The previous seed only created Study Library, even though all five
+  // templates were already present and supported by the Phaser client.
+  for (const officialSpace of officialSpaces) {
+    const map = maps.get(officialSpace.map.name)!;
+    const spaceData = {
+      name: officialSpace.map.name,
+      width: map.width,
+      height: map.height,
+      thumbnail: map.thumbnail,
+      mapImage: map.mapImage,
+      official: true,
+      creatorId: system.id,
+    };
+
+    const existing = await client.space.findUnique({
+      where: { code: officialSpace.code },
+    });
+
+    if (existing) {
+      await client.space.update({
+        where: { id: existing.id },
+        data: spaceData,
+      });
+      logger.info(
+        { code: officialSpace.code, name: officialSpace.map.name },
+        "official space updated",
+      );
+    } else {
+      await client.space.create({
+        data: {
+          ...spaceData,
+          code: officialSpace.code,
+        },
+      });
+      logger.info(
+        { code: officialSpace.code, name: officialSpace.map.name },
+        "official space created",
+      );
+    }
   }
 }
 
