@@ -71,13 +71,6 @@ export default function Arena() {
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
   const [tabletMenuOpen, setTabletMenuOpen] = useState(false);
-  const [classroomAction, setClassroomAction] = useState<string | null>(null);
-  const [classroomScore, setClassroomScore] = useState(0);
-  const [classroomActivity, setClassroomActivity] = useState<string | null>(null);
-  const [classroomMission, setClassroomMission] = useState<string | null>(null);
-  const [quizOpen, setQuizOpen] = useState(false);
-  const [quizAnswered, setQuizAnswered] = useState(false);
-  const [quizStreak, setQuizStreak] = useState(0);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -87,7 +80,6 @@ export default function Arena() {
     chat.chatOpen ||
     learningAppOpen ||
     tabletMenuOpen ||
-    quizOpen ||
     roundMovementBlocked;
   const chatDisabled =
     !!conn.hideSeekState &&
@@ -105,36 +97,10 @@ export default function Arena() {
   }, [video.screenShare]);
 
   useEffect(() => {
-    const openLearningApp = () => {
-      setClassroomAction(null);
-      setQuizOpen(false);
-      setTabletMenuOpen(true);
-    };
-    const showClassroomAction = (target: { label?: string; interaction?: string }) => {
-      if (!target.label) return;
-      const activities: Record<string, { title: string; prompt: string; points: number }> = {
-        "open-board": { title: "กระดานความรู้", prompt: "พร้อมเรียนบทใหม่! +10 XP", points: 10 },
-        "teacher-zone": { title: "พื้นที่ครู", prompt: "ตรวจภารกิจประจำวัน +15 XP", points: 15 },
-        "student-seat": { title: "โต๊ะเรียน", prompt: "เริ่มภารกิจคำศัพท์ +20 XP", points: 20 },
-        bookshelf: { title: "ห้องสมุด", prompt: "ค้นพบคำศัพท์ใหม่ +10 XP", points: 10 },
-        computer: { title: "คอมพิวเตอร์", prompt: "เปิดบทเรียนดิจิทัล", points: 0 },
-        "exit-classroom": { title: "ประตูห้องเรียน", prompt: "จบคาบเรียน", points: 0 },
-      };
-      const activity = target.interaction ? activities[target.interaction] : undefined;
-      if (!activity) return;
-      setClassroomAction(target.label);
-      setClassroomActivity(activity.prompt);
-      setClassroomMission(activity.points > 0 ? `ภารกิจ: ทำกิจกรรมให้สำเร็จเพื่อรับ ${activity.points} XP` : null);
-      setQuizAnswered(false);
-      if (target.interaction === "student-seat" || target.interaction === "open-board" || target.interaction === "bookshelf") {
-        setQuizOpen(true);
-      }
-    };
+    const openLearningApp = () => setLearningAppOpen(true);
     EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
-    EventBus.on(SpaceEvent.SchoolTimeInteract, showClassroomAction);
     return () => {
       EventBus.off(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
-      EventBus.off(SpaceEvent.SchoolTimeInteract, showClassroomAction);
     };
   }, []);
 
@@ -200,6 +166,19 @@ export default function Arena() {
           onStart={conn.startHideSeek}
           onTag={conn.tagHideSeek}
         />
+      )}
+
+      {tabletMenuOpen && !learningAppOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-[min(26rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
+            <button type="button" className={`${button.primary} min-h-12 w-full px-4 text-base`} onClick={() => { setTabletMenuOpen(false); setLearningAppOpen(true); }}>
+              เรียนรู้
+            </button>
+            <button type="button" className={`${button.ghost} mt-3 min-h-11 w-full px-4`} onClick={() => setTabletMenuOpen(false)}>
+              ← กลับเข้าเกม
+            </button>
+          </div>
+        </div>
       )}
 
       <div
@@ -556,72 +535,6 @@ export default function Arena() {
           </>
         )}
       </div>
-
-      {classroomAction && !learningAppOpen && (
-        <div className="fixed inset-x-0 bottom-20 z-[115] mx-auto w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-line bg-midnight/95 p-4 text-moonlight shadow-2xl backdrop-blur">
-          <div className="text-xs font-semibold uppercase tracking-wide text-coin">Classroom</div>
-          <div className="mt-1 text-base font-semibold">{classroomAction}</div>
-          <div className="mt-1 text-xs text-fog">{classroomActivity ?? "กิจกรรมห้องเรียน"}</div>
-          {classroomMission && (
-            <div className="mt-2 rounded-xl border border-line bg-night/60 p-2 text-xs text-moonlight">🎯 {classroomMission}</div>
-          )}
-          {classroomScore > 0 && (
-            <div className="mt-2 text-sm font-bold text-coin">⭐ XP ห้องเรียน: {classroomScore}</div>
-          )}
-          <button
-            type="button"
-            className={`${button.primary} mt-3 min-h-10 px-4`}
-            onClick={() => setClassroomAction(null)}
-          >
-            ปิด
-          </button>
-        </div>
-      )}
-
-      {tabletMenuOpen && !learningAppOpen && !quizOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-[min(26rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
-            <div className="text-xs font-semibold uppercase tracking-wide text-coin">📱 English Tablet</div>
-            <h2 className="mt-2 text-xl font-bold">ห้องเรียนภาษาอังกฤษ</h2>
-            <p className="mt-2 text-sm leading-relaxed text-fog">เลือกกิจกรรมที่ต้องการเรียน แล้วกลับเข้าเกมได้ทุกเมื่อ</p>
-            <button type="button" className={`${button.primary} mt-5 min-h-12 w-full px-4 text-base`} onClick={() => { setTabletMenuOpen(false); setQuizAnswered(false); setClassroomActivity(null); setQuizOpen(true); }}>
-              🎮 เรียนรู้ — Vocabulary Mission
-            </button>
-            <button type="button" className={`${button.ghost} mt-3 min-h-11 w-full px-4`} onClick={() => setTabletMenuOpen(false)}>
-              ← กลับเข้าเกม
-            </button>
-          </div>
-        </div>
-      )}
-
-      {quizOpen && !learningAppOpen && (
-        <div className="fixed inset-0 z-[125] flex items-center justify-center bg-black/60 p-4">
-          <div className="w-[min(30rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
-            <div className="text-xs font-semibold uppercase tracking-wide text-coin">Mini Mission</div>
-            <h2 className="mt-2 text-xl font-bold">What is “book”?</h2>
-            <p className="mt-1 text-sm text-fog">เลือกคำแปลที่ถูกต้องเพื่อรับ XP · 🔥 Streak {quizStreak}</p>
-            <div className="mt-4 grid gap-2">
-              {["หนังสือ", "โต๊ะ", "กระดาน"].map((answer) => (
-                <button key={answer} type="button" disabled={quizAnswered} className={`${button.secondary} min-h-12 w-full px-4 text-left`} onClick={() => {
-                  if (quizAnswered) return;
-                  setQuizAnswered(true);
-                  if (answer === "หนังสือ") {
-                    setQuizStreak((streak) => streak + 1);
-                    setClassroomScore((score) => score + (quizStreak >= 2 ? 30 : 20));
-                  } else {
-                    setQuizStreak(0);
-                  }
-                  setClassroomActivity(answer === "หนังสือ" ? `ถูกต้อง! +${quizStreak >= 2 ? 30 : 20} XP` : "ยังไม่ถูก ลองภารกิจถัดไป");
-                }}>{answer}</button>
-              ))}
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button type="button" className={`${button.ghost} min-h-10 flex-1 px-3`} onClick={() => { setQuizOpen(false); setTabletMenuOpen(false); }}>← กลับเข้าเกม</button>
-              {quizAnswered && <button type="button" className={`${button.primary} min-h-10 flex-1 px-3`} onClick={() => { setQuizOpen(false); setTabletMenuOpen(true); }}>📱 เมนูแท็บเล็ต</button>}
-            </div>
-          </div>
-        </div>
-      )}
 
       {learningAppOpen && (
         <div className="fixed inset-0 z-[120] flex min-h-0 flex-col bg-[#eef5fa]">
