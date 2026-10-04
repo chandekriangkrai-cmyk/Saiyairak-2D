@@ -98,14 +98,6 @@ export default function Arena() {
   }, [video.screenShare]);
 
   useEffect(() => {
-    const openLearningApp = () => setLearningAppOpen(true);
-    EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
-    return () => {
-      EventBus.off(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
-    };
-  }, []);
-
-  useEffect(() => {
     const openTabletMenu = (target: { type?: string }) => {
       if (target?.type !== "tablet") return;
       setTabletMenuOpen(true);
