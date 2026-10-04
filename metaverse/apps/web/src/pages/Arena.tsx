@@ -70,6 +70,7 @@ export default function Arena() {
   const [copied, setCopied] = useState(false);
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
+  const [tabletMenuOpen, setTabletMenuOpen] = useState(false);
   const [classroomAction, setClassroomAction] = useState<string | null>(null);
   const [classroomScore, setClassroomScore] = useState(0);
   const [classroomActivity, setClassroomActivity] = useState<string | null>(null);
@@ -85,6 +86,8 @@ export default function Arena() {
     rankingOpen ||
     chat.chatOpen ||
     learningAppOpen ||
+    tabletMenuOpen ||
+    quizOpen ||
     roundMovementBlocked;
   const chatDisabled =
     !!conn.hideSeekState &&
@@ -104,7 +107,8 @@ export default function Arena() {
   useEffect(() => {
     const openLearningApp = () => {
       setClassroomAction(null);
-      setLearningAppOpen(true);
+      setQuizOpen(false);
+      setTabletMenuOpen(true);
     };
     const showClassroomAction = (target: { label?: string; interaction?: string }) => {
       if (!target.label) return;
@@ -574,6 +578,22 @@ export default function Arena() {
         </div>
       )}
 
+      {tabletMenuOpen && !learningAppOpen && !quizOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-[min(26rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
+            <div className="text-xs font-semibold uppercase tracking-wide text-coin">📱 English Tablet</div>
+            <h2 className="mt-2 text-xl font-bold">ห้องเรียนภาษาอังกฤษ</h2>
+            <p className="mt-2 text-sm leading-relaxed text-fog">เลือกกิจกรรมที่ต้องการเรียน แล้วกลับเข้าเกมได้ทุกเมื่อ</p>
+            <button type="button" className={`${button.primary} mt-5 min-h-12 w-full px-4 text-base`} onClick={() => { setTabletMenuOpen(false); setQuizAnswered(false); setClassroomActivity(null); setQuizOpen(true); }}>
+              🎮 เรียนรู้ — Vocabulary Mission
+            </button>
+            <button type="button" className={`${button.ghost} mt-3 min-h-11 w-full px-4`} onClick={() => setTabletMenuOpen(false)}>
+              ← กลับเข้าเกม
+            </button>
+          </div>
+        </div>
+      )}
+
       {quizOpen && !learningAppOpen && (
         <div className="fixed inset-0 z-[125] flex items-center justify-center bg-black/60 p-4">
           <div className="w-[min(30rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
@@ -595,7 +615,10 @@ export default function Arena() {
                 }}>{answer}</button>
               ))}
             </div>
-            {quizAnswered && <button type="button" className={`${button.primary} mt-4 min-h-10 px-4`} onClick={() => setQuizOpen(false)}>กลับเข้าห้องเรียน</button>}
+            <div className="mt-4 flex gap-2">
+              <button type="button" className={`${button.ghost} min-h-10 flex-1 px-3`} onClick={() => { setQuizOpen(false); setTabletMenuOpen(false); }}>← กลับเข้าเกม</button>
+              {quizAnswered && <button type="button" className={`${button.primary} min-h-10 flex-1 px-3`} onClick={() => { setQuizOpen(false); setTabletMenuOpen(true); }}>📱 เมนูแท็บเล็ต</button>}
+            </div>
           </div>
         </div>
       )}
