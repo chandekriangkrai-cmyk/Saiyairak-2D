@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { SpaceConfig } from "../config/spaces";
 import { CollisionGrid, type CollisionRows } from "../systems/CollisionGrid";
+import { CLASSROOM_V2_ASSETS } from "../config/classroomV2";
 
 export const SPACE_TEXTURE = "space-image";
 export const SPACE_FOREGROUND_TEXTURE = "space-foreground";
@@ -36,8 +37,9 @@ export class BootScene extends Phaser.Scene {
 
   private async boot(): Promise<void> {
     const config = this.spaceConfig;
+    const classroomV2 = config.id === "classroom";
     const [imageOk, foregroundOk, collisionSource] = await Promise.all([
-      probeAsset(config.imagePath, "image/"),
+      classroomV2 ? Promise.resolve(false) : probeAsset(config.imagePath, "image/"),
       config.foregroundPath
         ? probeAsset(config.foregroundPath, "image/")
         : Promise.resolve(false),
@@ -46,6 +48,16 @@ export class BootScene extends Phaser.Scene {
     if (this.dead) return;
 
     if (imageOk) this.load.image(SPACE_TEXTURE, config.imagePath);
+    if (classroomV2) {
+      for (const [index, path] of CLASSROOM_V2_ASSETS.classroom.entries()) {
+        if (!(await probeAsset(path, "image/"))) continue;
+        this.load.image(`classroom-v2-primary-${index}`, path);
+      }
+      for (const [index, path] of CLASSROOM_V2_ASSETS.classroomSecond.entries()) {
+        if (!(await probeAsset(path, "image/"))) continue;
+        this.load.image(`classroom-v2-secondary-${index}`, path);
+      }
+    }
     if (foregroundOk) {
       this.load.image(SPACE_FOREGROUND_TEXTURE, config.foregroundPath!);
     }
@@ -61,6 +73,14 @@ export class BootScene extends Phaser.Scene {
   }
 
   private finish(collisionSource: CollisionRows | null): void {
+    if (this.spaceConfig.id === "classroom") {
+      // The V2 room is assembled from the imported CC0 spritesheets.
+      // Keep the legacy baked classroom texture available as a fallback.
+      if (!this.textures.exists("classroom-v2-primary-0")) {
+        console.warn("Classroom V2 primary spritesheet did not load; using legacy classroom");
+      }
+    }
+
     if (this.textures.exists(SPACE_TEXTURE)) {
       this.textures
         .get(SPACE_TEXTURE)

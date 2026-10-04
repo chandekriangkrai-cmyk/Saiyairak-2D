@@ -70,6 +70,8 @@ export default function Arena() {
   const [copied, setCopied] = useState(false);
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
+  const learningFrameRef = useRef<HTMLIFrameElement | null>(null);
+  const [tabletMenuOpen, setTabletMenuOpen] = useState(false);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -78,6 +80,7 @@ export default function Arena() {
     rankingOpen ||
     chat.chatOpen ||
     learningAppOpen ||
+    tabletMenuOpen ||
     roundMovementBlocked;
   const chatDisabled =
     !!conn.hideSeekState &&
@@ -95,10 +98,13 @@ export default function Arena() {
   }, [video.screenShare]);
 
   useEffect(() => {
-    const openLearningApp = () => setLearningAppOpen(true);
-    EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+    const openTabletMenu = (target: { type?: string }) => {
+      if (target?.type !== "tablet") return;
+      setTabletMenuOpen(true);
+    };
+    EventBus.on(SpaceEvent.SchoolTimeInteract, openTabletMenu);
     return () => {
-      EventBus.off(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+      EventBus.off(SpaceEvent.SchoolTimeInteract, openTabletMenu);
     };
   }, []);
 
@@ -110,8 +116,19 @@ export default function Arena() {
         setLearningAppOpen(false);
       }
     };
+    const onLearningPageMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.source !== learningFrameRef.current?.contentWindow) return;
+      if (event.data?.type === "english-learning:close") {
+        setLearningAppOpen(false);
+      }
+    };
+    window.addEventListener("message", onLearningPageMessage);
     window.addEventListener("keydown", closeOnKey);
-    return () => window.removeEventListener("keydown", closeOnKey);
+    return () => {
+      window.removeEventListener("keydown", closeOnKey);
+      window.removeEventListener("message", onLearningPageMessage);
+    };
   }, [learningAppOpen]);
 
   const learningAppUrl = `${import.meta.env.BASE_URL}english-learning/index.html`;
@@ -164,6 +181,19 @@ export default function Arena() {
           onStart={conn.startHideSeek}
           onTag={conn.tagHideSeek}
         />
+      )}
+
+      {tabletMenuOpen && !learningAppOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-[min(26rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
+            <button type="button" className={`${button.primary} min-h-12 w-full px-4 text-base`} onClick={() => { setTabletMenuOpen(false); setLearningAppOpen(true); }}>
+              เรียนรู้
+            </button>
+            <button type="button" className={`${button.ghost} mt-3 min-h-11 w-full px-4`} onClick={() => setTabletMenuOpen(false)}>
+              ← กลับเข้าเกม
+            </button>
+          </div>
+        </div>
       )}
 
       <div
@@ -544,6 +574,7 @@ export default function Arena() {
           <iframe
             src={learningAppUrl}
             title="English Learning App"
+            ref={learningFrameRef}
             className="min-h-0 flex-1 border-0 bg-[#eef5fa]"
             allow="autoplay"
             allowFullScreen
