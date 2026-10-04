@@ -5,6 +5,7 @@ import { CollisionGrid, type CollisionRows } from "../systems/CollisionGrid";
 import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
 import type { CollisionEditor } from "../systems/CollisionEditor";
+import { applyClassroomFurnitureOrientation } from "../systems/ClassroomFurnitureOrientation";
 import { Player } from "../entities/Player";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import {
@@ -79,6 +80,7 @@ export class SpaceScene extends Phaser.Scene {
     // The teacher NPC was removed. Only real world objects remain blockers.
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
+      applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
@@ -307,10 +309,6 @@ export class SpaceScene extends Phaser.Scene {
     this.movementEnabled = false;
     this.virtualDirection = null;
     this.movement.update(null);
-  }
-
-  private resumeMovement(): void {
-    this.movementEnabled = true;
   }
 
   private autosave(force = false): void {
