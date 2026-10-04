@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import type { ArenaSocket } from "../lib/ws";
 import { MultiplayerSpaceScene } from "../game/scenes/MultiplayerSpaceScene";
+import { EventBus, SpaceEvent } from "../game/EventBus";
 import { formatDuration } from "../lib/format";
 import { useArenaChat } from "../hooks/useArenaChat";
 import { useArenaConnection } from "../hooks/useArenaConnection";
@@ -68,6 +69,7 @@ export default function Arena() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [watching, setWatching] = useState(false);
+  const [learningAppOpen, setLearningAppOpen] = useState(false);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -75,6 +77,7 @@ export default function Arena() {
     whiteboardOpen ||
     rankingOpen ||
     chat.chatOpen ||
+    learningAppOpen ||
     roundMovementBlocked;
   const chatDisabled =
     !!conn.hideSeekState &&
@@ -86,9 +89,32 @@ export default function Arena() {
   useEffect(() => {
     sceneRef.current?.setKeyboardEnabled(!inputBlocked);
   }, [inputBlocked]);
+
   useEffect(() => {
     if (!video.screenShare) setWatching(false);
   }, [video.screenShare]);
+
+  useEffect(() => {
+    const openLearningApp = () => setLearningAppOpen(true);
+    EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+    return () => {
+      EventBus.off(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!learningAppOpen) return;
+    const closeOnKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        setLearningAppOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnKey);
+    return () => window.removeEventListener("keydown", closeOnKey);
+  }, [learningAppOpen]);
+
+  const learningAppUrl = `${import.meta.env.BASE_URL}english-learning/index.html`;
 
   const copyCode = useCallback(async () => {
     if (!conn.spaceCode) return;
@@ -276,6 +302,7 @@ export default function Arena() {
             ))}
           </ul>
         </div>
+
         {conn.whiteboardEnabled && (
           <button
             className={`${button.primary} min-w-0 px-3 text-xs sm:text-sm`}
@@ -287,6 +314,7 @@ export default function Arena() {
             เปิดกระดาน
           </button>
         )}
+
         {conn.studyEnabled && (
           <button
             className={`${button.ghost} bg-midnight/75 px-3 text-xs sm:text-sm`}
@@ -295,6 +323,7 @@ export default function Arena() {
             อันดับการเรียน
           </button>
         )}
+
         {music.hasMusic && (
           <button
             className={`${button.ghost} bg-midnight/75 px-3 text-xs sm:text-sm`}
@@ -304,6 +333,7 @@ export default function Arena() {
             {music.muted ? "🔇 Muted" : "🔊 Music"}
           </button>
         )}
+
         <SpaceControls />
       </div>
 
@@ -340,6 +370,7 @@ export default function Arena() {
             ⧉ Share your screen
           </button>
         )}
+
         {presentation.canStopSharing && (
           <button
             className={`${button.dangerSolid} px-3 text-xs sm:text-sm`}
@@ -348,6 +379,7 @@ export default function Arena() {
             ■ Stop sharing
           </button>
         )}
+
         {presentation.canWatch && !watching && (
           <button
             className={`${button.ghost} bg-midnight/85 px-3 text-xs sm:text-sm`}
@@ -359,14 +391,17 @@ export default function Arena() {
               : `${video.screenShare!.name}'s screen`}
           </button>
         )}
+
         {presentation.blockedBy && (
           <span className={`${hudChipClass} text-xs sm:text-sm`}>
             {presentation.blockedBy} is using the projector
           </span>
         )}
+
         {video.shareError && (
           <span className={hudChipAlertClass}>{video.shareError}</span>
         )}
+
         {conn.errorText ? (
           <span className={hudChipAlertClass}>
             {conn.errorText} <Link to="/">Back to rooms</Link>
@@ -383,10 +418,12 @@ export default function Arena() {
         )}
       </div>
 
-      {!inputBlocked && (<>
-        <MobileJoystick />
-        <SchoolActionButtons />
-      </>)}
+      {!inputBlocked && (
+        <>
+          <MobileJoystick />
+          <SchoolActionButtons />
+        </>
+      )}
 
       <div
         className={cx(
@@ -405,6 +442,7 @@ export default function Arena() {
             {chat.chatOpen ? "▾" : "▴"}
           </span>
         </button>
+
         {chat.chatOpen && (
           <>
             <div
@@ -449,6 +487,7 @@ export default function Arena() {
                 )
               )}
             </div>
+
             <form
               className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2 border-t border-line p-2.5"
               onSubmit={chat.sendChat}
@@ -481,6 +520,36 @@ export default function Arena() {
           </>
         )}
       </div>
+
+      {learningAppOpen && (
+        <div className="fixed inset-0 z-[120] flex min-h-0 flex-col bg-[#eef5fa]">
+          <div className="flex min-h-14 shrink-0 items-center gap-3 border-b border-line bg-midnight px-3 py-2 text-moonlight shadow-lg sm:px-4">
+            <button
+              type="button"
+              className={`${button.primary} min-h-10 px-4`}
+              onClick={() => setLearningAppOpen(false)}
+              aria-label="กลับสู่เกม"
+            >
+              ← กลับสู่เกม
+            </button>
+            <div className="min-w-0">
+              <div className="truncate font-pixel text-[0.62rem] uppercase tracking-wide text-coin">
+                School Time
+              </div>
+              <div className="truncate text-sm font-semibold">
+                English Learning App
+              </div>
+            </div>
+          </div>
+          <iframe
+            src={learningAppUrl}
+            title="English Learning App"
+            className="min-h-0 flex-1 border-0 bg-[#eef5fa]"
+            allow="autoplay"
+            allowFullScreen
+          />
+        </div>
+      )}
 
       {watching && video.screenShare && (
         <ScreenShareDialog

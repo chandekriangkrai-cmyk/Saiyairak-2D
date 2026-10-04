@@ -9,6 +9,7 @@ export const SpaceEvent = {
   MoveDirection: "space:move-direction",
   SchoolTimeInteract: "school-time:interact",
   SchoolTimeAction: "school-time:action",
+  SchoolTimeLearningApp: "school-time:learning-app",
   ZoomIn: "zoom:in",
   ZoomOut: "zoom:out",
 } as const;
