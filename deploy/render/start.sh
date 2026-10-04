@@ -3,6 +3,10 @@ set -eu
 
 cd /app/metaverse
 
+# Render's public PORT belongs to nginx. Keep application servers on private ports.
+export INTERNAL_HTTP_PORT=3000
+export WS_PORT=3001
+
 printf '%s\n' '[school-time] applying database migrations'
 bunx prisma migrate deploy --config packages/db/prisma.config.ts
 

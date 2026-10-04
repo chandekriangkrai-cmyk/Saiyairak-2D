@@ -6,7 +6,7 @@ import { User } from "./User";
 import { createHeartbeat } from "./heartbeat";
 import { logger } from "./logger";
 
-const port = Number(process.env.PORT ?? 3001);
+const port = Number(process.env.WS_PORT ?? 3001);
 const wss = new WebSocketServer({ port });
 
 logger.info({ port }, "websocket server listening");
