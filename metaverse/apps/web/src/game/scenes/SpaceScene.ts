@@ -92,6 +92,7 @@ export class SpaceScene extends Phaser.Scene {
         }
       }
       applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
+      this.renderClassroomV2(tileSize);
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
@@ -193,6 +194,41 @@ export class SpaceScene extends Phaser.Scene {
     } else {
       keyboard.resetKeys();
       keyboard.removeCapture(MOVEMENT_KEYS);
+    }
+  }
+
+
+  private renderClassroomV2(tileSize: number): void {
+    const textureKey = "classroom-v2-primary-0";
+    if (!this.textures.exists(textureKey)) return;
+
+    // The imported CC0 sheet is intentionally kept as source art. We crop
+    // selected furniture pieces at runtime so no second atlas/metadata format
+    // is required and the gameplay coordinates stay independent of filenames.
+    const crops: Record<string, { x: number; y: number; w: number; h: number }> = {
+      board: { x: 750, y: 45, w: 195, h: 155 },
+      bookshelf: { x: 15, y: 150, w: 610, h: 260 },
+      "student-desk": { x: 445, y: 845, w: 145, h: 125 },
+      "teacher-desk": { x: 250, y: 675, w: 170, h: 135 },
+      computer: { x: 640, y: 300, w: 180, h: 100 },
+    };
+
+    for (const object of CLASSROOM_V2_OBJECTS) {
+      const crop = crops[object.kind];
+      if (!crop) continue;
+      const sprite = this.add
+        .image((object.tile.x + (object.size?.w ?? 1) / 2) * tileSize,
+          (object.tile.y + (object.size?.h ?? 1) / 2) * tileSize,
+          textureKey)
+        .setOrigin(0.5)
+        .setCrop(crop.x, crop.y, crop.w, crop.h)
+        .setDepth(DEPTH_SPACE + 1);
+
+      const targetW = Math.max(tileSize * (object.size?.w ?? 1), crop.w * 0.55);
+      const targetH = Math.max(tileSize * (object.size?.h ?? 1), crop.h * 0.55);
+      sprite.setDisplaySize(targetW, targetH);
+      sprite.setData("classroomObjectId", object.id);
+      sprite.setData("interaction", object.interaction ?? null);
     }
   }
 
