@@ -383,8 +383,10 @@ export default function Arena() {
         )}
       </div>
 
-      {!inputBlocked && <MobileJoystick />
-      <SchoolActionButtons />}
+      {!inputBlocked && (<>
+        <MobileJoystick />
+        <SchoolActionButtons />
+      </>)}
 
       <div
         className={cx(
