@@ -6,7 +6,6 @@ import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
 import type { CollisionEditor } from "../systems/CollisionEditor";
 import { Player } from "../entities/Player";
-import { Woka } from "../entities/Woka";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import {
   SPACE_FOREGROUND_TEXTURE,
@@ -20,19 +19,11 @@ const DEPTH_FOREGROUND = 20;
 const DEPTH_UI = 1000;
 
 const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
-const TEACHER_TILE: TileCoord = { x: 7, y: 4 };
 const TABLET_TILE: TileCoord = { x: 10, y: 3 };
 
 type InteractionTarget = TileCoord & {
-  type: "npc" | "tablet";
+  type: "tablet";
   label: string;
-};
-
-const FACING_DELTA: Record<Direction, TileCoord> = {
-  up: { x: 0, y: -1 },
-  down: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-  right: { x: 1, y: 0 },
 };
 
 export class SpaceScene extends Phaser.Scene {
@@ -52,17 +43,7 @@ export class SpaceScene extends Phaser.Scene {
 
   private interactionTarget: InteractionTarget | null = null;
   private interactionHint!: Phaser.GameObjects.Text;
-  private schoolNpc!: Woka;
   private tabletObject!: Phaser.GameObjects.Container;
-
-  private dialogueBox!: Phaser.GameObjects.Container;
-  private dialogueText!: Phaser.GameObjects.Text;
-  private readonly dialoguePages = [
-    "สวัสดีนักเรียน! ยินดีต้อนรับสู่ School Time",
-    "วันนี้เราจะเริ่มเรียนภาษาอังกฤษกัน",
-    "เดินไปที่แท็บเล็ต แล้วกด A เพื่อเริ่มกิจกรรม",
-  ];
-  private dialogueIndex = -1;
 
   private readonly saveKey = "school-time-save-v1";
   private lastSaveSignature = "";
@@ -95,9 +76,8 @@ export class SpaceScene extends Phaser.Scene {
     const rows = Math.ceil(image.height / tileSize);
     this.grid = new CollisionGrid(cols, rows, this.collisionSource);
 
-    // Dynamic classroom objects are part of the world and cannot be walked through.
+    // The teacher NPC was removed. Only real world objects remain blockers.
     if (this.spaceConfig.id === "classroom") {
-      this.grid.setBlocked(TEACHER_TILE.x, TEACHER_TILE.y, true);
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
     }
 
@@ -126,7 +106,6 @@ export class SpaceScene extends Phaser.Scene {
     }
 
     if (this.spaceConfig.id === "classroom") {
-      this.createTeacher(tileSize);
       this.createTablet(tileSize);
     }
 
@@ -143,11 +122,8 @@ export class SpaceScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as SpaceScene["wasd"];
 
-    // A/Confirm on desktop is Space or Enter. Mobile uses the on-screen A button.
     this.input.keyboard?.on("keydown-SPACE", () => this.tryInteract());
     this.input.keyboard?.on("keydown-ENTER", () => this.tryInteract());
-    this.input.keyboard?.on("keydown-B", () => this.dismissDialogue());
-    this.input.keyboard?.on("keydown-X", () => this.dismissDialogue());
 
     if (import.meta.env.DEV) {
       import("../systems/CollisionEditor").then(({ CollisionEditor }) => {
@@ -174,8 +150,6 @@ export class SpaceScene extends Phaser.Scene {
       EventBus.off(SpaceEvent.SchoolTimeAction, this.onSchoolAction, this);
       this.input.keyboard?.off("keydown-SPACE");
       this.input.keyboard?.off("keydown-ENTER");
-      this.input.keyboard?.off("keydown-B");
-      this.input.keyboard?.off("keydown-X");
     });
 
     EventBus.emit(SpaceEvent.SceneReady);
@@ -207,34 +181,6 @@ export class SpaceScene extends Phaser.Scene {
       keyboard.resetKeys();
       keyboard.removeCapture(MOVEMENT_KEYS);
     }
-  }
-
-  private createTeacher(tileSize: number): void {
-    this.schoolNpc = new Woka(this, tileSize);
-    this.schoolNpc.setPosition(
-      (TEACHER_TILE.x + 0.5) * tileSize,
-      (TEACHER_TILE.y + 1) * tileSize,
-    );
-    this.schoolNpc.setDepth(DEPTH_PLAYER - 1);
-    this.schoolNpc.setData("tile", TEACHER_TILE);
-    this.schoolNpc.setData("label", "ครู");
-
-    const npcLabel = this.add
-      .text(
-        (TEACHER_TILE.x + 0.5) * tileSize,
-        TEACHER_TILE.y * tileSize - 8,
-        "ครู",
-        {
-          fontFamily: "sans-serif",
-          fontSize: "12px",
-          color: "#ffffff",
-          backgroundColor: "#14162bcc",
-          padding: { x: 4, y: 2 },
-        },
-      )
-      .setOrigin(0.5, 1)
-      .setDepth(DEPTH_PLAYER + 1);
-    this.schoolNpc.setData("labelObject", npcLabel);
   }
 
   private createTablet(tileSize: number): void {
@@ -301,52 +247,37 @@ export class SpaceScene extends Phaser.Scene {
   }
 
   private onSchoolAction(action: string): void {
-    if (action === "B") {
-      this.dismissDialogue();
-      return;
-    }
+    if (action === "B") return;
     this.tryInteract();
   }
 
   private tryInteract(): void {
-    if (this.dialogueBox?.visible) {
-      this.advanceDialogue();
-      return;
-    }
-
     const target = this.interactionTarget;
     if (!target) return;
 
     EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
-
-    if (target.type === "tablet") {
-      this.autosave(true);
-      this.pauseMovement();
-      EventBus.emit(SpaceEvent.SchoolTimeLearningApp);
-      return;
-    }
-
-    this.openDialogue();
+    this.autosave(true);
+    this.pauseMovement();
+    EventBus.emit(SpaceEvent.SchoolTimeLearningApp);
   }
 
   private updateInteractionTarget(): void {
-    if (this.spaceConfig.id !== "classroom" || this.dialogueBox?.visible) {
+    if (this.spaceConfig.id !== "classroom") {
       this.setCurrentInteractionTarget(null);
       return;
     }
 
     const tile = this.movement.tile;
-    const delta = FACING_DELTA[this.movement.facing];
+    const facing = this.movement.facing;
+    const delta: TileCoord =
+      facing === "up"
+        ? { x: 0, y: -1 }
+        : facing === "down"
+          ? { x: 0, y: 1 }
+          : facing === "left"
+            ? { x: -1, y: 0 }
+            : { x: 1, y: 0 };
     const front = { x: tile.x + delta.x, y: tile.y + delta.y };
-
-    if (front.x === TEACHER_TILE.x && front.y === TEACHER_TILE.y) {
-      this.setCurrentInteractionTarget({
-        ...TEACHER_TILE,
-        type: "npc",
-        label: "ครู",
-      });
-      return;
-    }
 
     if (front.x === TABLET_TILE.x && front.y === TABLET_TILE.y) {
       this.setCurrentInteractionTarget({
@@ -367,62 +298,9 @@ export class SpaceScene extends Phaser.Scene {
       this.interactionHint.setVisible(false);
       return;
     }
-    const action = target.type === "tablet" ? "เปิด" : "คุยกับ";
-    this.interactionHint.setText(`A · ${action} ${target.label}`).setVisible(true);
-  }
-
-  private openDialogue(): void {
-    if (!this.dialogueBox) {
-      const width = Math.min(this.scale.width - 24, 760);
-      const bg = this.add
-        .rectangle(0, 0, width, 104, 0x14162b, 0.96)
-        .setOrigin(0, 0);
-      bg.setStrokeStyle(2, 0xffc53d, 1);
-
-      this.dialogueText = this.add.text(16, 14, "", {
-        fontFamily: "sans-serif",
-        fontSize: "16px",
-        color: "#ffffff",
-        wordWrap: { width: width - 32 },
-      });
-
-      const hint = this.add
-        .text(width - 16, 80, "A: ต่อ  B: ปิด", {
-          fontFamily: "sans-serif",
-          fontSize: "11px",
-          color: "#ffc53d",
-        })
-        .setOrigin(1, 0);
-
-      this.dialogueBox = this.add
-        .container(12, this.scale.height - 120, [bg, this.dialogueText, hint])
-        .setScrollFactor(0)
-        .setDepth(DEPTH_UI);
-    }
-
-    this.dialogueIndex = 0;
-    this.dialogueText.setText(this.dialoguePages[this.dialogueIndex]!);
-    this.dialogueBox.setVisible(true);
-    this.interactionHint.setVisible(false);
-    this.pauseMovement();
-  }
-
-  private advanceDialogue(): void {
-    if (!this.dialogueBox?.visible) return;
-    if (this.dialogueIndex >= this.dialoguePages.length - 1) {
-      this.dismissDialogue();
-      return;
-    }
-
-    this.dialogueIndex += 1;
-    this.dialogueText.setText(this.dialoguePages[this.dialogueIndex]!);
-  }
-
-  private dismissDialogue(): void {
-    if (!this.dialogueBox?.visible) return;
-    this.dialogueIndex = -1;
-    this.dialogueBox.setVisible(false);
-    this.resumeMovement();
+    this.interactionHint
+      .setText(`A · เปิด ${target.label}`)
+      .setVisible(true);
   }
 
   private pauseMovement(): void {
@@ -436,8 +314,6 @@ export class SpaceScene extends Phaser.Scene {
   }
 
   private autosave(force = false): void {
-    if (this.dialogueBox?.visible) return;
-
     const tile = this.movement.tile;
     const signature = `${this.spaceConfig.id}:${tile.x}:${tile.y}`;
     if (!force && signature === this.lastSaveSignature) return;
