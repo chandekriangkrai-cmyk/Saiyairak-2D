@@ -4,7 +4,7 @@ set -eu
 cd /app/metaverse
 
 printf '%s\n' '[school-time] applying database migrations'
-bunx prisma migrate deploy --schema packages/db/prisma/schema.prisma
+bunx prisma migrate deploy --config packages/db/prisma.config.ts
 
 printf '%s\n' '[school-time] synchronizing seed data'
 bun packages/db/seed.ts
