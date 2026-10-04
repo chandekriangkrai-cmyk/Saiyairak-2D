@@ -506,9 +506,17 @@ Current result: **63 passing, 0 failing, 63 total** across 10 suites, stable acr
 
 Coverage shown in this README comes from Bun's instrumented fast suite. Jest integration coverage is not currently collected, so combining it into the coverage percentage would be misleading.
 
-## Production deployment architecture
+## School Time deployment
 
-The live environment is self-hosted on one Rocky Linux VPS with 8 GB RAM. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
+The repository now includes a self-contained Render Blueprint for the School Time build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
+
+[![Deploy School Time to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/TrueMetaverse)
+
+The free Render configuration is intended for testing/preview: free web services can spin down after inactivity, and free Render Postgres expires after 30 days. Upgrade the database before using the service as a durable production save system.
+
+## Upstream reference deployment architecture
+
+The following section documents the upstream TrueMetaverse deployment model inherited by this foundation. It is reference infrastructure, not a claim that this School Time fork is already running on that VPS. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
 
 ### Public routing
 

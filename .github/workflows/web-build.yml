@@ -19,3 +19,17 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run --cwd apps/web check-types
       - run: bun run --cwd apps/web build
+
+
+  production-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build School Time production container
+        run: docker build -f deploy/render/Dockerfile -t school-time:ci .
+      - name: Validate deployment files
+        run: |
+          test -x deploy/render/start.sh
+          test -f deploy/render/nginx.conf
+          test -f render.yaml
+          git diff --check
