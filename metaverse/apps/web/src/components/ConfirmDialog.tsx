@@ -14,7 +14,7 @@ export default function ConfirmDialog({
   children,
   confirmLabel,
   busyLabel,
-  cancelLabel = "Cancel",
+  cancelLabel = "ยกเลิก",
   danger = false,
   busy = false,
   error,

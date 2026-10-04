@@ -47,12 +47,12 @@ export default function SpaceControls() {
   return (
     <div
       className="flex w-fit self-end items-center gap-1 rounded-xl border border-line bg-[#14162bf2] p-1 shadow-[0_8px_24px_#05061166] backdrop-blur-md"
-      aria-label="Map zoom"
+      aria-label="การซูมแผนที่"
       role="group"
     >
-      <ZoomButton label="Zoom out" event={SpaceEvent.ZoomOut} path="M4 10h12" />
+      <ZoomButton label="ซูมออก" event={SpaceEvent.ZoomOut} path="M4 10h12" />
       <ZoomButton
-        label="Zoom in"
+        label="ซูมเข้า"
         event={SpaceEvent.ZoomIn}
         path="M10 4v12M4 10h12"
       />
@@ -178,12 +178,12 @@ export function MobileJoystick() {
   return (
     <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+4.25rem)] left-3 z-[6] hidden flex-col items-center gap-1 [@media(pointer:coarse)]:flex">
       <span className="rounded bg-midnight/80 px-1.5 py-0.5 font-pixel text-[0.48rem] uppercase tracking-wider text-fog backdrop-blur-sm">
-        move
+        เดิน
       </span>
       <button
         type="button"
         className="relative grid h-[6.5rem] w-[6.5rem] touch-none select-none place-items-center rounded-full border border-line-strong bg-[#111326d9] shadow-[0_10px_30px_#05061188,inset_0_0_0_1px_#ffffff08] outline-none backdrop-blur-md focus-visible:ring-2 focus-visible:ring-portal focus-visible:ring-offset-2 focus-visible:ring-offset-midnight"
-        aria-label="Move character. Drag the joystick or use arrow keys."
+        aria-label="บังคับตัวละคร ลากจอยสติ๊กหรือใช้ปุ่มลูกศร"
         aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight W A S D"
         onContextMenu={(event) => event.preventDefault()}
         onKeyDown={handleKeyDown}

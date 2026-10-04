@@ -86,7 +86,7 @@ export default function LeaderboardDialog({
                   <th className="px-2 py-2 text-left font-mono text-xs font-medium text-fog">
                     #
                   </th>
-                  <th className="px-2 py-2" aria-label="Avatar" />
+                  <th className="px-2 py-2" aria-label="ตัวละคร" />
                   <th className="px-2 py-2 text-left font-mono text-xs font-medium text-fog">
                     scholar
                   </th>

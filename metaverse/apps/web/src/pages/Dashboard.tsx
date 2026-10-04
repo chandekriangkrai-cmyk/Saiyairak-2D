@@ -58,7 +58,7 @@ export default function Dashboard() {
       .mySpaces()
       .then((res) => setSpaces(res.spaces))
       .catch((e) =>
-        setError(e instanceof ApiError ? e.message : "Could not load rooms"),
+        setError(e instanceof ApiError ? e.message : "โหลดห้องไม่สำเร็จ"),
       );
   }, []);
 
@@ -86,7 +86,7 @@ export default function Dashboard() {
       navigate(`/space/${res.spaceId}`);
     } catch (err) {
       setJoinError(
-        err instanceof ApiError ? err.message : "Could not find that room",
+        err instanceof ApiError ? err.message : "ไม่พบห้องนี้",
       );
     }
   }
@@ -134,9 +134,9 @@ export default function Dashboard() {
       <main className="mx-auto w-full max-w-[1240px] min-w-0 overflow-x-clip px-4 py-8 sm:px-8 sm:py-10">
         <section className="mb-10 grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(300px,380px)] items-center gap-8 max-[820px]:grid-cols-1">
           <div className="min-w-0">
-            <p className={eyebrowClass}>YOUR LOBBY</p>
+            <p className={eyebrowClass}>โรงเรียนของคุณ</p>
             <h1 className="max-w-3xl break-words font-pixel text-[clamp(1.25rem,3.3vw,2.15rem)] leading-[1.45] text-moonlight [overflow-wrap:anywhere]">
-              <span className="text-[#ffd35d]">Welcome back</span>,{" "}
+              <span className="text-[#ffd35d]">ยินดีต้อนรับกลับมา</span>,{" "}
               {session?.username ?? "explorer"}.
             </h1>
             <p className="mt-3 max-w-2xl text-[clamp(0.95rem,2vw,1.08rem)] leading-relaxed text-fog">
@@ -157,9 +157,9 @@ export default function Dashboard() {
                 #
               </span>
               <div>
-                <p className={`${eyebrowClass} mb-1`}>QUICK JOIN</p>
+                <p className={`${eyebrowClass} mb-1`}>เข้าร่วมห้อง</p>
                 <h2 className="font-pixel text-[0.78rem] leading-relaxed text-moonlight">
-                  Enter a room code
+                  ใส่รหัสห้อง
                 </h2>
               </div>
             </div>
@@ -170,14 +170,14 @@ export default function Dashboard() {
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder="QK7M2X"
                 maxLength={8}
-                aria-label="Room code"
+                aria-label="รหัสห้อง"
                 className={`${inputClass} font-mono uppercase tracking-[0.14em]`}
               />
               <button
                 className={button.primary}
                 disabled={joinCode.trim().length < 4}
               >
-                Join
+                เข้าร่วม
               </button>
             </div>
             {joinError && (
@@ -193,9 +193,9 @@ export default function Dashboard() {
             <section className="min-w-0">
               <div className={sectionHeadingClass}>
                 <div className="min-w-0">
-                  <p className={eyebrowClass}>OPEN SPACES</p>
+                  <p className={eyebrowClass}>พื้นที่เปิด</p>
                   <h2 className="font-pixel text-[0.9rem] leading-relaxed text-moonlight">
-                    Start somewhere lively
+                    เริ่มต้นการเรียนรู้
                   </h2>
                 </div>
                 <span className="shrink-0 rounded-full border border-line bg-midnight/70 px-3 py-1 font-mono text-[0.67rem] text-fog">
@@ -204,7 +204,7 @@ export default function Dashboard() {
               </div>
               {official.length === 0 ? (
                 <div className={emptyClass}>
-                  No official rooms are open right now.
+                  ยังไม่มีห้องที่เปิดให้เข้า
                 </div>
               ) : (
                 <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
@@ -233,7 +233,7 @@ export default function Dashboard() {
                           {space.name}
                         </span>
                         <span className="flex shrink-0 items-center gap-1.5 text-xs text-[#8bdabb]">
-                          open now
+                          เปิดอยู่
                         </span>
                       </div>
                     </div>
@@ -245,16 +245,16 @@ export default function Dashboard() {
             <section className="min-w-0">
               <div className={sectionHeadingClass}>
                 <div className="min-w-0">
-                  <p className={eyebrowClass}>YOUR SPACES</p>
+                  <p className={eyebrowClass}>ห้องของคุณ</p>
                   <h2 className="font-pixel text-[0.9rem] leading-relaxed text-moonlight">
-                    Rooms you host
+                    ห้องที่คุณสร้าง
                   </h2>
                 </div>
                 <button
                   className={button.primary}
                   onClick={() => setShowCreate(true)}
                 >
-                  New room
+                  สร้างห้องใหม่
                 </button>
               </div>
               {error && (
@@ -263,11 +263,11 @@ export default function Dashboard() {
                 </p>
               )}
               {spaces === null && (
-                <div className={emptyClass}>Loading your rooms...</div>
+                <div className={emptyClass}>กำลังโหลดห้องของคุณ...</div>
               )}
               {spaces && spaces.length === 0 && (
                 <div className={emptyClass}>
-                  No rooms yet. Create one for your next study crew.
+                  ยังไม่มีห้อง สร้างห้องสำหรับกิจกรรมครั้งถัดไป
                 </div>
               )}
               {spaces && spaces.length > 0 && (
@@ -319,7 +319,7 @@ export default function Dashboard() {
                             askToDelete(space);
                           }}
                         >
-                          Delete
+                          ลบ
                         </button>
                       </div>
                     </div>
@@ -331,12 +331,12 @@ export default function Dashboard() {
 
           <aside className="sticky top-[90px] min-w-0 rounded-xl border border-line bg-dusk p-5 shadow-[0_14px_34px_#05061155] max-[940px]:static">
             <div>
-              <p className={eyebrowClass}>PLAYER PROFILE</p>
+              <p className={eyebrowClass}>โปรไฟล์นักเรียน</p>
               <h2 className="font-pixel text-[0.85rem] leading-relaxed text-moonlight">
-                Your avatar
+                ตัวละครของคุณ
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-fog">
-                Everyone in a room sees this character.
+                ผู้เล่นในห้องจะเห็นตัวละครนี้
               </p>
             </div>
             <div className="mt-5 flex min-w-0 items-center gap-5 rounded-xl border border-line bg-midnight/55 p-4 max-[340px]:flex-col">
@@ -344,12 +344,12 @@ export default function Dashboard() {
                 <WokaPreview appearance={appearance} scale={3} animated />
               </div>
               <div className="min-w-0">
-                <p className={mutedClass}>Layered, fully customizable.</p>
+                <p className={mutedClass}>ปรับแต่งตัวละครได้อย่างอิสระ</p>
                 <button
                   className={`${button.primary} mt-3 w-full`}
                   onClick={() => setShowWoka(true)}
                 >
-                  Customize
+                  ปรับแต่ง
                 </button>
               </div>
             </div>
@@ -374,13 +374,13 @@ export default function Dashboard() {
 
       {pendingDelete && (
         <ConfirmDialog
-          title="Delete this room?"
+          title="ลบห้องนี้หรือไม่?"
           danger
           busy={deleting}
           error={deleteError}
-          confirmLabel="Delete room"
-          busyLabel="Deleting..."
-          cancelLabel="Keep it"
+          confirmLabel="ลบห้อง"
+          busyLabel="กำลังลบ..."
+          cancelLabel="เก็บไว้"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
         >
@@ -446,7 +446,7 @@ function CreateRoomModal({
       onCreated(res.spaceId);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Could not create the room",
+        err instanceof ApiError ? err.message : "สร้างห้องไม่สำเร็จ",
       );
       setBusy(false);
     }
@@ -460,23 +460,23 @@ function CreateRoomModal({
         onSubmit={handleSubmit}
       >
         <h2 className="font-pixel text-[0.95rem] leading-relaxed text-moonlight">
-          New room
+          สร้างห้องใหม่
         </h2>
 
         <label className={`${labelClass} mt-5`}>
-          <span className={labelTextClass}>Name</span>
+          <span className={labelTextClass}>ชื่อ</span>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My space"
+            placeholder="ห้องของฉัน"
             required
             autoFocus
             className={inputClass}
           />
         </label>
 
-        <p className={`${mutedClass} mb-2 mt-4`}>Pick a template</p>
+        <p className={`${mutedClass} mb-2 mt-4`}>เลือกแผนที่</p>
         <div className="grid min-w-0 grid-cols-2 gap-3 max-[420px]:grid-cols-1">
           {maps.map((map) => (
             <button
@@ -509,10 +509,10 @@ function CreateRoomModal({
 
         <div className={modalActionsClass}>
           <button type="button" className={button.ghost} onClick={onClose}>
-            Cancel
+            ยกเลิก
           </button>
           <button className={button.primary} disabled={busy || !mapId}>
-            {busy ? "Creating..." : "Create room"}
+            {busy ? "กำลังสร้าง..." : "Create room"}
           </button>
         </div>
       </form>

@@ -148,7 +148,7 @@ function PeerCard({
         {!peer.mic && (
           <span
             className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border border-alert/35 bg-[#14162bcc] text-alert [&>svg]:h-2.5 [&>svg]:w-2.5"
-            title="Mic off"
+            title="ปิดไมโครโฟน"
           >
             <MicIcon off />
           </span>
@@ -199,7 +199,7 @@ export default function VideoDock({
                   !video.micOn && "border-alert/35 bg-[#3b1b2ecc] text-alert",
                 )}
                 onClick={video.toggleMic}
-                title={video.micOn ? "Turn mic off" : "Turn mic on"}
+                title={video.micOn ? "ปิดไมโครโฟน" : "เปิดไมโครโฟน"}
               >
                 <MicIcon off={!video.micOn} />
               </button>
@@ -209,7 +209,7 @@ export default function VideoDock({
                   !video.camOn && "border-alert/35 bg-[#3b1b2ecc] text-alert",
                 )}
                 onClick={video.toggleCam}
-                title={video.camOn ? "Turn camera off" : "Turn camera on"}
+                title={video.camOn ? "ปิดกล้อง" : "เปิดกล้อง"}
               >
                 <CamIcon off={!video.camOn} />
               </button>

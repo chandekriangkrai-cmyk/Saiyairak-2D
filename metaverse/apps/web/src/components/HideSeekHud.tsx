@@ -5,10 +5,10 @@ import type { UserMeta } from "../hooks/useArenaConnection";
 import { button, cx } from "../lib/ui";
 
 const phaseLabel = {
-  lobby: "Waiting room",
-  hiding: "Hide now",
-  seeking: "Seekers released",
-  finished: "Round over",
+  lobby: "ห้องรอ",
+  hiding: "ซ่อนตอนนี้",
+  seeking: "ผู้ค้นหาเริ่มออกตามหา",
+  finished: "จบรอบ",
 } as const;
 
 function remainingSeconds(deadline: number | null, now: number): number | null {
@@ -111,9 +111,9 @@ export default function HideSeekHud({
   ).length;
   const result =
     state.winner === "seeker"
-      ? "The seeker found everyone"
+      ? "ผู้ค้นหาพบทุกคน"
       : state.winner === "hiders"
-        ? "The hiders escaped"
+        ? "ผู้ซ่อนหนีรอดทั้งหมด"
         : null;
   const roleText =
     state.selfStatus === "spectator" || state.selfStatus === "tagged"
@@ -123,7 +123,7 @@ export default function HideSeekHud({
   return (
     <section
       className="pointer-events-none absolute left-1/2 top-[4.75rem] z-[7] w-[min(27rem,calc(100vw-1.5rem))] -translate-x-1/2"
-      aria-label="Hide and seek round"
+      aria-label="รอบซ่อนหา"
     >
       <div className="pointer-events-auto overflow-hidden rounded-2xl border border-[#d5b76a66] bg-[#121724ed] shadow-[0_16px_42px_#05061199] backdrop-blur-lg">
         <div className="flex min-w-0 items-center justify-between gap-3 border-b border-white/10 px-3 py-2.5 sm:px-4">
@@ -201,7 +201,7 @@ export default function HideSeekHud({
             >
               {targetId
                 ? `Tag ${meta[state.participants.find((p) => p.id === targetId)?.userId ?? ""]?.username ?? "hider"}`
-                : "Get closer to tag"}
+                : "เข้าใกล้เพื่อแตะ"}
             </button>
           )}
         </div>

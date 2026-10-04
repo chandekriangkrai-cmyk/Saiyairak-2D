@@ -144,7 +144,7 @@ export default function Arena() {
         className={`${hudBaseClass} left-3 top-3 max-w-[calc(100vw-6rem)] flex-wrap sm:left-4 sm:top-4 sm:max-w-[calc(100vw-18rem)]`}
       >
         <Link to="/" className={`${button.ghost} min-h-9 bg-midnight/75 px-3`}>
-          ← Leave
+          ← ออกจากห้อง
         </Link>
         <span className={`${hudChipClass} max-w-[min(14rem,50vw)] truncate`}>
           {conn.spaceName ?? "..."}
@@ -158,26 +158,26 @@ export default function Arena() {
                 setInviteOpen((v) => !v);
               }}
             >
-              Invite
+              เชิญเพื่อน
             </button>
             {inviteOpen && (
               <div
                 className={`${floatingPanelClass} absolute left-0 top-[calc(100%+0.5rem)] w-[min(18rem,calc(100vw-1.5rem))] p-4`}
               >
                 <div className="font-pixel text-[0.6rem] uppercase tracking-wider text-fog">
-                  Room code
+                  รหัสห้อง
                 </div>
                 <div className="my-3 break-all rounded-lg border border-line-strong bg-midnight px-3 py-2 text-center font-mono text-lg font-bold tracking-[0.18em] text-coin">
                   {conn.spaceCode}
                 </div>
                 <p className="text-sm leading-relaxed text-fog">
-                  Share this code so others can join your room.
+                  แชร์รหัสนี้ให้เพื่อนเพื่อเข้าร่วมห้อง
                 </p>
                 <button
                   className={`${button.primary} mt-3 w-full`}
                   onClick={copyCode}
                 >
-                  {copied ? "Copied ✓" : "Copy code"}
+                  {copied ? "คัดลอกแล้ว ✓" : "คัดลอกรหัส"}
                 </button>
               </div>
             )}
@@ -191,12 +191,12 @@ export default function Arena() {
             )}
           >
             {conn.status === "connecting"
-              ? "connecting..."
+              ? "กำลังเชื่อมต่อ..."
               : conn.status === "closed"
-                ? "disconnected"
+                ? "การเชื่อมต่อหลุด"
                 : conn.status === "replaced"
-                  ? "opened in another tab"
-                  : "error"}
+                  ? "เปิดอยู่ในแท็บอื่น"
+                  : "เกิดข้อผิดพลาด"}
           </span>
         )}
       </div>
@@ -230,13 +230,13 @@ export default function Arena() {
                 </span>
                 {conn.isTeacher && (
                   <span className="shrink-0 rounded bg-coin/15 px-1.5 py-0.5 font-mono text-[0.55rem] uppercase text-coin">
-                    Teacher
+                    ครู
                   </span>
                 )}
                 {conn.hideSeekState && (
                   <span className="shrink-0 rounded bg-[#86b68e22] px-1.5 py-0.5 font-mono text-[0.55rem] uppercase text-[#acd5b2]">
                     {conn.hideSeekState.selfStatus === "waiting"
-                      ? "ready"
+                      ? "พร้อม"
                       : conn.hideSeekState.selfRole}
                   </span>
                 )}
@@ -260,13 +260,13 @@ export default function Arena() {
                 </span>
                 {conn.teacher?.userId === userId && (
                   <span className="shrink-0 rounded bg-coin/15 px-1.5 py-0.5 font-mono text-[0.55rem] uppercase text-coin">
-                    Teacher
+                    ครู
                   </span>
                 )}
                 {roundParticipants[sid] && (
                   <span className="shrink-0 rounded bg-[#86b68e22] px-1.5 py-0.5 font-mono text-[0.55rem] uppercase text-[#acd5b2]">
                     {roundParticipants[sid]!.status === "waiting"
-                      ? "ready"
+                      ? "พร้อม"
                       : roundParticipants[sid]!.status === "tagged"
                         ? "tagged"
                         : roundParticipants[sid]!.role}
@@ -284,7 +284,7 @@ export default function Arena() {
             <span className="text-base" aria-hidden="true">
               ✎
             </span>
-            Open whiteboard
+            เปิดกระดาน
           </button>
         )}
         {conn.studyEnabled && (
@@ -292,14 +292,14 @@ export default function Arena() {
             className={`${button.ghost} bg-midnight/75 px-3 text-xs sm:text-sm`}
             onClick={() => setRankingOpen(true)}
           >
-            Ranking board
+            อันดับการเรียน
           </button>
         )}
         {music.hasMusic && (
           <button
             className={`${button.ghost} bg-midnight/75 px-3 text-xs sm:text-sm`}
             onClick={music.toggleMute}
-            title={music.muted ? "Unmute music" : "Mute music"}
+            title={music.muted ? "เปิดเสียงเพลง" : "ปิดเสียงเพลง"}
           >
             {music.muted ? "🔇 Muted" : "🔊 Music"}
           </button>
@@ -321,7 +321,7 @@ export default function Arena() {
             onClick={timer.toggle}
           >
             {timer.startedAt === null
-              ? "▶ Start studying"
+              ? "▶ เริ่มเรียน"
               : `■ Stop · ${formatDuration(timer.elapsed)}`}
           </button>
         )}
@@ -355,7 +355,7 @@ export default function Arena() {
           >
             ▶ Watch{" "}
             {video.screenShare!.isSelf
-              ? "your screen"
+              ? "หน้าจอของคุณ"
               : `${video.screenShare!.name}'s screen`}
           </button>
         )}
@@ -374,10 +374,10 @@ export default function Arena() {
         ) : (
           <span className={`${hudChipClass} font-mono text-[0.65rem]`}>
             <span className="[@media(pointer:coarse)]:hidden">
-              arrow keys / wasd to move
+              ปุ่มลูกศร / WASD เพื่อเดิน
             </span>
             <span className="hidden [@media(pointer:coarse)]:inline">
-              use the joystick to move
+              ใช้จอยสติ๊กเพื่อเดิน
             </span>
           </span>
         )}
@@ -395,9 +395,9 @@ export default function Arena() {
         <button
           className="flex min-h-10 w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold text-moonlight hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-portal"
           onClick={() => chat.setChatOpen((v) => !v)}
-          title={chat.chatOpen ? "Hide chat" : "Show chat"}
+          title={chat.chatOpen ? "ซ่อนแชต" : "แสดงแชต"}
         >
-          <span>chat</span>
+          <span>แชต</span>
           <span className="font-mono text-fog">
             {chat.chatOpen ? "▾" : "▴"}
           </span>
@@ -414,7 +414,7 @@ export default function Arena() {
                     (conn.hideSeekState.phase === "hiding" ||
                       conn.hideSeekState.phase === "seeking")
                     ? "During a round, chat is private to active hiders."
-                    : "Say hi to the room. Messages are visible to everyone here."}
+                    : "ทักทายเพื่อนในห้อง ข้อความจะแสดงให้ทุกคนเห็น"}
                 </div>
               ) : (
                 chat.messages.map((m) =>
@@ -458,8 +458,8 @@ export default function Arena() {
                 maxLength={500}
                 placeholder={
                   chatDisabled
-                    ? "Chat unavailable while spectating"
-                    : "Message the room..."
+                    ? "ไม่สามารถแชตขณะกำลังรับชมได้"
+                    : "ส่งข้อความในห้อง..."
                 }
                 disabled={conn.status !== "live" || chatDisabled}
               />
@@ -472,7 +472,7 @@ export default function Arena() {
                   chat.chatInput.trim().length === 0
                 }
               >
-                Send
+                ส่ง
               </button>
             </form>
           </>
@@ -488,7 +488,7 @@ export default function Arena() {
 
       {whiteboardOpen && conn.whiteboardEnabled && (
         <WhiteboardDialog
-          teacherName={conn.teacher?.username ?? "Classroom creator"}
+          teacherName={conn.teacher?.username ?? "ผู้สร้างห้องเรียน"}
           isTeacher={conn.isTeacher}
           elements={conn.whiteboardScene?.elements ?? []}
           sceneVersion={conn.whiteboardScene?.version ?? 0}

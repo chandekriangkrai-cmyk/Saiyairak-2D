@@ -43,7 +43,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
       setError(
         err instanceof ApiError
           ? err.message
-          : "Something went wrong. Try again.",
+          : "เกิดข้อผิดพลาด กรุณาลองอีกครั้ง",
       );
     } finally {
       setBusy(false);
@@ -58,15 +58,15 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
           aria-hidden="true"
         >
           <div className="relative z-[1] flex justify-between gap-4 font-mono text-[0.64rem] tracking-[0.08em] text-[#b8e9dc] max-[540px]:text-[0.56rem]">
-            <span>TRUEMETAVERSE</span>
-            <span>LOBBY ACCESS</span>
+            <span>SCHOOL TIME</span>
+            <span>เข้าสู่โรงเรียน</span>
           </div>
           <div className="relative z-[1] mt-[76px] w-full max-w-[420px] max-[820px]:mt-10 max-[540px]:mt-8">
             <span className="inline-block font-pixel text-[0.62rem] tracking-[0.06em] text-[#ffd35d]">
-              STUDY TOGETHER
+              เรียนรู้ไปด้วยกัน
             </span>
             <h1 className="my-3 max-w-[390px] font-pixel text-[clamp(1.3rem,2.5vw,1.82rem)] leading-[1.58] text-[#fff5d4] max-[540px]:text-[1.12rem]">
-              Find your focus in a world with people around.
+              ค้นพบโลกการเรียนรู้ที่มีเพื่อนอยู่รอบตัว
             </h1>
             <p className="m-0 max-w-[380px] text-[0.95rem] text-[#d6efe5] max-[540px]:text-sm">
               Drop into shared spaces, make a quiet corner your own, and stay on
@@ -76,7 +76,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
           <div className="relative z-[1] mt-auto min-h-[230px] overflow-hidden border-4 border-[#142e35] bg-[#183e43] shadow-[inset_0_0_0_4px_#3c826c] max-[820px]:hidden max-[540px]:block max-[540px]:min-h-[98px] max-[540px]:border-[3px] max-[540px]:shadow-[inset_0_0_0_3px_#3c826c]">
             <div className="auth-scene-floor-art absolute inset-x-0 bottom-0 h-[76px] border-t-[5px] border-[#93be58] bg-[#235d4b] max-[540px]:h-[38px] max-[540px]:border-t-[3px]" />
             <div className="absolute top-[22px] left-1/2 -translate-x-1/2 whitespace-nowrap border-[3px] border-[#f6bc35] bg-[#354774] px-3 py-2 font-pixel text-[0.58rem] text-[#fff2c6] shadow-[4px_4px_0_#142e35] max-[540px]:top-[7px] max-[540px]:border-2 max-[540px]:px-1.5 max-[540px]:py-1 max-[540px]:text-[0.45rem] max-[540px]:shadow-[2px_2px_0_#142e35]">
-              STUDY LOUNGE
+              ห้องเรียนรู้
             </div>
             <div className="absolute right-[10%] bottom-9 left-[10%] flex items-end justify-around max-[540px]:right-[14%] max-[540px]:bottom-1 max-[540px]:left-[14%]">
               {SPRITES.map((src, index) => (
@@ -91,7 +91,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
           </div>
           <p className="relative z-[1] mt-[18px] mb-0 flex items-center gap-2 font-mono text-[0.7rem] text-[#c8e7da] max-[820px]:mt-auto max-[540px]:mt-3">
             <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-[#69e6bd] shadow-[0_0_0_3px_#3b7e6b]" />
-            Shared rooms are open around the clock
+            พื้นที่การเรียนรู้เปิดให้ใช้งานตลอดเวลา
           </p>
         </div>
 
@@ -106,15 +106,15 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
           <form className="w-full max-w-[390px]" onSubmit={handleSubmit}>
             <div className="mb-7">
               <span className="inline-block font-pixel text-[0.62rem] tracking-[0.06em] text-[#ffd35d]">
-                {isSignup ? "NEW EXPLORER" : "WELCOME BACK"}
+                {isSignup ? "นักเรียนใหม่" : "ยินดีต้อนรับกลับมา"}
               </span>
               <h2 className="mt-2.5 mb-2 font-pixel text-[1.16rem] leading-[1.55] text-[#fff4d2]">
-                {isSignup ? "Create your account" : "Enter the lobby"}
+                {isSignup ? "สร้างบัญชีของคุณ" : "เข้าสู่โรงเรียน"}
               </h2>
               <p className="m-0 text-sm text-[#9da4c6]">
                 {isSignup
-                  ? "Set up your player profile to join shared study spaces."
-                  : "Sign in to pick up where your study session left off."}
+                  ? "สร้างโปรไฟล์นักเรียนเพื่อเข้าร่วมพื้นที่การเรียนรู้"
+                  : "เข้าสู่ระบบเพื่อเรียนต่อจากครั้งล่าสุด"}
               </p>
             </div>
 
@@ -122,7 +122,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
               <span
                 className={`${labelTextClass} mb-1.5 font-mono text-[0.73rem] text-[#c4c9e1]`}
               >
-                Username
+                ชื่อผู้ใช้
               </span>
               <input
                 className={`${inputClass} min-h-[46px] rounded-[5px] border-[#444a76] bg-[#14162d]`}
@@ -130,7 +130,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
-                placeholder="Your player name"
+                placeholder="ชื่อผู้เล่นของคุณ"
                 required
               />
             </label>
@@ -139,7 +139,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
               <span
                 className={`${labelTextClass} mb-1.5 font-mono text-[0.73rem] text-[#c4c9e1]`}
               >
-                Password
+                รหัสผ่าน
               </span>
               <input
                 className={`${inputClass} min-h-[46px] rounded-[5px] border-[#444a76] bg-[#14162d]`}
@@ -147,13 +147,13 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isSignup ? "new-password" : "current-password"}
-                placeholder={isSignup ? "Choose a password" : "Your password"}
+                placeholder={isSignup ? "ตั้งรหัสผ่าน" : "รหัสผ่านของคุณ"}
                 minLength={isSignup ? 10 : undefined}
                 required
               />
               {isSignup && (
                 <span className="mt-1.5 font-mono text-[0.68rem] text-[#8e95bd]">
-                  At least 10 characters
+                  อย่างน้อย 10 ตัวอักษร
                 </span>
               )}
             </label>
@@ -169,20 +169,20 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
               disabled={busy}
             >
               {busy
-                ? "Opening lobby..."
+                ? "กำลังเข้าสู่โรงเรียน..."
                 : isSignup
-                  ? "Create account"
-                  : "Sign in"}
+                  ? "สร้างบัญชี"
+                  : "เข้าสู่ระบบ"}
             </button>
 
             <p className="mt-[22px] text-center text-sm text-[#969dbc] [&_a]:font-semibold [&_a]:text-portal">
               {isSignup ? (
                 <>
-                  Already have an account? <Link to="/signin">Sign in</Link>
+                  มีบัญชีอยู่แล้ว? <Link to="/signin">เข้าสู่ระบบ</Link>
                 </>
               ) : (
                 <>
-                  New here? <Link to="/signup">Create an account</Link>
+                  ยังไม่มีบัญชี? <Link to="/signup">สร้างบัญชี</Link>
                 </>
               )}
             </p>

@@ -58,14 +58,14 @@ export default function WokaCustomizer({
       >
         <div className={`${modalActionsClass} mt-0 mb-4`}>
           <button className={button.ghost} onClick={onClose} disabled={busy}>
-            Cancel
+            ยกเลิก
           </button>
           <button
             className={button.primary}
             onClick={handleSave}
             disabled={busy}
           >
-            {busy ? "Saving..." : "Save avatar"}
+            {busy ? "Saving..." : "บันทึกตัวละคร"}
           </button>
         </div>
         <h2 id="woka-title" className="font-pixel text-[0.95rem] text-coin">

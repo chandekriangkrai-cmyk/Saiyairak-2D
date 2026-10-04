@@ -43,14 +43,14 @@ export default function ScreenShareDialog({
           <span className="flex min-w-0 items-center gap-2 truncate font-pixel text-[0.65rem] text-moonlight sm:text-xs">
             <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-alert shadow-[0_0_0_3px_#ff6b8126]" />
             {share.isSelf
-              ? "You are presenting"
+              ? "คุณกำลังนำเสนอ"
               : `${share.name} is presenting`}
           </span>
           <button
             className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line-strong bg-transparent text-fog transition-colors hover:bg-dusk-raised hover:text-moonlight focus-visible:outline-2 focus-visible:outline-portal"
             onClick={onClose}
-            title="Close (Esc)"
-            aria-label="Close screen share"
+            title="ปิด (Esc)"
+            aria-label="ปิดการแชร์หน้าจอ"
           >
             ✕
           </button>

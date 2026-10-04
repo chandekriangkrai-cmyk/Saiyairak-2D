@@ -149,7 +149,7 @@ export default function WhiteboardDialog({
                   id="whiteboard-title"
                   className="truncate font-pixel text-[0.72rem] leading-relaxed text-[#242638] sm:text-[0.8rem]"
                 >
-                  Classroom whiteboard
+                  กระดานห้องเรียน
                 </h2>
                 <span
                   className={`shrink-0 rounded-full border px-2 py-0.5 font-mono text-[0.58rem] uppercase tracking-wide ${
@@ -158,7 +158,7 @@ export default function WhiteboardDialog({
                       : "border-[#b9bbc8] bg-[#f1f1f5] text-[#626474]"
                   }`}
                 >
-                  {isTeacher ? "Editing" : "View only"}
+                  {isTeacher ? "กำลังแก้ไข" : "ดูอย่างเดียว"}
                 </span>
               </div>
               <p className="mt-1 flex min-w-0 items-center gap-1 text-[0.7rem] text-[#6e7080] max-[500px]:hidden sm:text-xs">
@@ -174,8 +174,8 @@ export default function WhiteboardDialog({
                 is the teacher
                 <span aria-hidden="true"> · </span>
                 {isTeacher
-                  ? "your work syncs live with the class"
-                  : "their work appears here live"}
+                  ? "ผลงานของคุณจะแสดงให้ทั้งห้องเห็นแบบเรียลไทม์"
+                  : "ผลงานของครูจะแสดงที่นี่แบบเรียลไทม์"}
               </p>
             </div>
           </div>
@@ -183,8 +183,8 @@ export default function WhiteboardDialog({
             ref={closeButtonRef}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#c9c7c1] bg-white text-2xl leading-none text-[#4c4e5d] transition-[background-color,border-color,transform] hover:border-[#a9a6a0] hover:bg-[#f1f0ec] active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5966b7]"
             onClick={onClose}
-            aria-label="Close whiteboard"
-            title="Close (Esc)"
+            aria-label="ปิดกระดาน"
+            title="ปิด (Esc)"
           >
             <span aria-hidden="true">×</span>
           </button>
@@ -200,7 +200,7 @@ export default function WhiteboardDialog({
             detectScroll={false}
             handleKeyboardGlobally={false}
             aiEnabled={false}
-            name="Classroom whiteboard"
+            name="กระดานห้องเรียน"
             UIOptions={{
               canvasActions: {
                 changeViewBackgroundColor: false,
@@ -222,7 +222,7 @@ export default function WhiteboardDialog({
               >
                 ✎
               </span>
-              <strong className="text-[#343647]">The board is ready</strong>
+              <strong className="text-[#343647]">กระดานพร้อมใช้งาน</strong>
               <span className="max-w-sm text-sm">
                 Waiting for {teacherName} to start the lesson.
               </span>
@@ -237,13 +237,13 @@ export default function WhiteboardDialog({
           />
           <span className="min-w-0 truncate">
             {isTeacher
-              ? "Live to everyone in this classroom"
+              ? "แสดงแบบเรียลไทม์ให้ทุกคนในห้องเรียน"
               : `Following ${teacherName}'s board`}
           </span>
           <span className="ml-auto shrink-0 text-right max-[720px]:hidden">
             {isTeacher
-              ? "Use the toolbar to draw, type, and explain"
-              : "Scroll to pan · pinch or use the controls to zoom"}
+              ? "ใช้เครื่องมือเพื่อวาด พิมพ์ และอธิบาย"
+              : "เลื่อนเพื่อดูพื้นที่ · ใช้นิ้วบีบหรือปุ่มควบคุมเพื่อซูม"}
           </span>
         </footer>
       </section>

@@ -35,7 +35,7 @@ export default function TopBar() {
           true<span className="text-moonlight">metaverse</span>
         </Link>
         <span className="hidden border-l border-line-strong pl-3 font-mono text-[0.65rem] text-fog sm:inline">
-          lobby
+          โรงเรียน
         </span>
       </div>
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -51,14 +51,14 @@ export default function TopBar() {
             {session.username}
           </span>
           <span className="flex items-center gap-1.5 font-mono text-[0.62rem] text-[#86d7ba]">
-            <i className="h-[5px] w-[5px] rounded-full bg-portal" /> online
+            <i className="h-[5px] w-[5px] rounded-full bg-portal" /> ออนไลน์
           </span>
         </div>
         <button
           className={`${button.ghost} min-h-9 shrink-0 px-3 py-2 text-xs sm:text-sm`}
           onClick={signout}
         >
-          Sign out
+          ออกจากระบบ
         </button>
       </div>
     </header>
