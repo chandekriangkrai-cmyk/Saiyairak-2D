@@ -5,6 +5,8 @@ on:
     branches: [main, ai/dev-loop]
   pull_request:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:

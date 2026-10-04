@@ -311,10 +311,6 @@ export class SpaceScene extends Phaser.Scene {
     this.movement.update(null);
   }
 
-  private resumeMovement(): void {
-    this.movementEnabled = true;
-  }
-
   private autosave(force = false): void {
     const tile = this.movement.tile;
     const signature = `${this.spaceConfig.id}:${tile.x}:${tile.y}`;
