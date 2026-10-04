@@ -79,6 +79,17 @@ export class SpaceScene extends Phaser.Scene {
 
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
+      for (const object of CLASSROOM_V2_OBJECTS) {
+        const w = object.size?.w ?? 1;
+        const h = object.size?.h ?? 1;
+        if (object.blocked) {
+          for (let y = 0; y < h; y += 1) {
+            for (let x = 0; x < w; x += 1) {
+              this.grid.setBlocked(object.tile.x + x, object.tile.y + y, true);
+            }
+          }
+        }
+      }
       applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
     }
 
