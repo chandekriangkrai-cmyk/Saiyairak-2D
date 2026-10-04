@@ -31,6 +31,7 @@ type InteractionTarget = TileCoord & {
 };
 
 export class SpaceScene extends Phaser.Scene {
+  private lastClassroomInteractionAt = 0;
   protected spaceConfig!: SpaceConfig;
   private collisionSource: CollisionRows | null = null;
 
@@ -306,7 +307,10 @@ export class SpaceScene extends Phaser.Scene {
     const target = this.interactionTarget;
     if (!target) return;
 
-    EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
+    if (Date.now() - this.lastClassroomInteractionAt >= 350) {
+      this.lastClassroomInteractionAt = Date.now();
+      EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
+    }
     this.autosave(true);
 
     if (target.type === "tablet") {
