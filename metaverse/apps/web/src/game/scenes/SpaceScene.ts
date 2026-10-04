@@ -77,7 +77,6 @@ export class SpaceScene extends Phaser.Scene {
     const rows = Math.ceil(image.height / tileSize);
     this.grid = new CollisionGrid(cols, rows, this.collisionSource);
 
-    // The teacher NPC was removed. Only real world objects remain blockers.
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
       applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
@@ -301,7 +300,7 @@ export class SpaceScene extends Phaser.Scene {
       return;
     }
     this.interactionHint
-      .setText(`A · เปิด ${target.label}`)
+      .setText("กด Enter / Space หรือปุ่มโต้ตอบ เพื่อเปิดแท็บเล็ตภาษาอังกฤษ")
       .setVisible(true);
   }
 
