@@ -70,6 +70,7 @@ export default function Arena() {
   const [copied, setCopied] = useState(false);
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
+  const [classroomAction, setClassroomAction] = useState<string | null>(null);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -95,10 +96,19 @@ export default function Arena() {
   }, [video.screenShare]);
 
   useEffect(() => {
-    const openLearningApp = () => setLearningAppOpen(true);
+    const openLearningApp = () => {
+      setClassroomAction(null);
+      setLearningAppOpen(true);
+    };
+    const showClassroomAction = (target: { label?: string; interaction?: string }) => {
+      if (target.interaction === "computer" || !target.label) return;
+      setClassroomAction(target.label);
+    };
     EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+    EventBus.on(SpaceEvent.SchoolTimeInteract, showClassroomAction);
     return () => {
       EventBus.off(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
+      EventBus.off(SpaceEvent.SchoolTimeInteract, showClassroomAction);
     };
   }, []);
 
@@ -520,6 +530,21 @@ export default function Arena() {
           </>
         )}
       </div>
+
+      {classroomAction && !learningAppOpen && (
+        <div className="fixed inset-x-0 bottom-20 z-[115] mx-auto w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-line bg-midnight/95 p-4 text-moonlight shadow-2xl backdrop-blur">
+          <div className="text-xs font-semibold uppercase tracking-wide text-coin">Classroom</div>
+          <div className="mt-1 text-base font-semibold">{classroomAction}</div>
+          <div className="mt-1 text-xs text-fog">จุดนี้พร้อมต่อยอดเป็นบทเรียนหรือมินิเกมเฉพาะกิจกรรม</div>
+          <button
+            type="button"
+            className={`${button.primary} mt-3 min-h-10 px-4`}
+            onClick={() => setClassroomAction(null)}
+          >
+            ปิด
+          </button>
+        </div>
+      )}
 
       {learningAppOpen && (
         <div className="fixed inset-0 z-[120] flex min-h-0 flex-col bg-[#eef5fa]">
