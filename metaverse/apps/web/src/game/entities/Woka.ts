@@ -18,6 +18,17 @@ const DIR_ROW: Record<Direction, number> = {
 };
 const WALK_FRAME_RATE = 8;
 
+const TEACHER_APPEARANCE: WokaAppearance = {
+  body: "body-0",
+  eyes: "eyes-0",
+  hair: "hair-1",
+  clothes: "clothes-63",
+  hat: "none",
+  accessory: "none",
+};
+
+const teacherSceneCounts = new WeakMap<Phaser.Scene, number>();
+
 function ensureAnimations(scene: Phaser.Scene, texKey: string): void {
   for (const dir of Object.keys(DIR_ROW) as Direction[]) {
     const animKey = `${texKey}:${dir}`;
@@ -51,7 +62,18 @@ export class Woka extends Phaser.GameObjects.Container {
     appearance?: WokaAppearance,
   ) {
     super(scene, 0, 0);
-    this.appearance = normalizeAppearance(appearance);
+
+    const count = (teacherSceneCounts.get(scene) ?? 0) + 1;
+    teacherSceneCounts.set(scene, count);
+
+    // SpaceScene creates the local player first and the classroom teacher second.
+    // Keep the player's selected appearance untouched while giving the NPC a
+    // consistent formal school outfit. Multiplayer scenes use different scene keys.
+    const isClassroomTeacher = scene.scene.key === "space" && count === 2;
+    this.appearance = normalizeAppearance(
+      appearance ?? (isClassroomTeacher ? TEACHER_APPEARANCE : undefined),
+    );
+
     this.setScale((CHARACTER_HEIGHT_TILES * tileSize) / FRAME_H);
     scene.add.existing(this);
     void this.rebuild();
