@@ -16,6 +16,9 @@ model User {
   avatarId        String?
   wokaAppearance  Json?
   role            Role
+  lastSpaceId     String?
+  lastX           Int?
+  lastY           Int?
   spaces          Space[]
   avatar          Avatar?        @relation(fields: [avatarId], references: [id])
   studySessions   StudySession[]
@@ -97,4 +100,5 @@ model Avatar {
 enum Role {
   Admin
   User
+  Teacher
 }
