@@ -106,6 +106,17 @@ export default function Arena() {
   }, []);
 
   useEffect(() => {
+    const openTabletMenu = (target: { type?: string }) => {
+      if (target?.type !== "tablet") return;
+      setTabletMenuOpen(true);
+    };
+    EventBus.on(SpaceEvent.SchoolTimeInteract, openTabletMenu);
+    return () => {
+      EventBus.off(SpaceEvent.SchoolTimeInteract, openTabletMenu);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!learningAppOpen) return;
     const closeOnKey = (event: KeyboardEvent) => {
       if (event.key === "Escape" || event.key.toLowerCase() === "b") {
