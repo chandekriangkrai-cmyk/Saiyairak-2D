@@ -65,11 +65,11 @@ export default function WokaCustomizer({
             onClick={handleSave}
             disabled={busy}
           >
-            {busy ? "Saving..." : "บันทึกตัวละคร"}
+            {busy ? "กำลังบันทึก..." : "บันทึกตัวละคร"}
           </button>
         </div>
         <h2 id="woka-title" className="font-pixel text-[0.95rem] text-coin">
-          your avatar
+          ตัวละครของคุณ
         </h2>
 
         <div className="mt-3 mb-2 grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-5">
@@ -79,7 +79,7 @@ export default function WokaCustomizer({
               className={`${button.ghost} min-h-8 px-2.5 py-1.5 text-xs`}
               onClick={() => setAppearance(randomAppearance())}
             >
-              🎲 Randomize
+              🎲 สุ่มตัวละคร
             </button>
           </div>
 

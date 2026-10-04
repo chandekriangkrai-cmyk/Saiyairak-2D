@@ -69,8 +69,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
               ค้นพบโลกการเรียนรู้ที่มีเพื่อนอยู่รอบตัว
             </h1>
             <p className="m-0 max-w-[380px] text-[0.95rem] text-[#d6efe5] max-[540px]:text-sm">
-              Drop into shared spaces, make a quiet corner your own, and stay on
-              task together.
+              เข้าสู่พื้นที่การเรียนรู้ร่วมกัน เลือกมุมของคุณ และเรียนรู้ไปพร้อมกับเพื่อน
             </p>
           </div>
           <div className="relative z-[1] mt-auto min-h-[230px] overflow-hidden border-4 border-[#142e35] bg-[#183e43] shadow-[inset_0_0_0_4px_#3c826c] max-[820px]:hidden max-[540px]:block max-[540px]:min-h-[98px] max-[540px]:border-[3px] max-[540px]:shadow-[inset_0_0_0_3px_#3c826c]">

@@ -3,7 +3,10 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./lib/auth";
 import App from "./App";
+import { installThaiUiTranslation } from "./lib/thaiUi";
 import "./styles.css";
+
+installThaiUiTranslation();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
