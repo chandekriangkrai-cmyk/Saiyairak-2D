@@ -74,6 +74,8 @@ export default function Arena() {
   const [classroomScore, setClassroomScore] = useState(0);
   const [classroomActivity, setClassroomActivity] = useState<string | null>(null);
   const [classroomMission, setClassroomMission] = useState<string | null>(null);
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [quizAnswered, setQuizAnswered] = useState(false);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -118,8 +120,9 @@ export default function Arena() {
       setClassroomAction(target.label);
       setClassroomActivity(activity.prompt);
       setClassroomMission(activity.points > 0 ? `ภารกิจ: ทำกิจกรรมให้สำเร็จเพื่อรับ ${activity.points} XP` : null);
-      if (activity.points > 0) {
-        setClassroomScore((score) => score + activity.points);
+      setQuizAnswered(false);
+      if (target.interaction === "student-seat" || target.interaction === "open-board" || target.interaction === "bookshelf") {
+        setQuizOpen(true);
       }
     };
     EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
@@ -567,6 +570,27 @@ export default function Arena() {
           >
             ปิด
           </button>
+        </div>
+      )}
+
+      {quizOpen && !learningAppOpen && (
+        <div className="fixed inset-0 z-[125] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-[min(30rem,100%)] rounded-2xl border border-line bg-midnight p-5 text-moonlight shadow-2xl">
+            <div className="text-xs font-semibold uppercase tracking-wide text-coin">Mini Mission</div>
+            <h2 className="mt-2 text-xl font-bold">What is “book”?</h2>
+            <p className="mt-1 text-sm text-fog">เลือกคำแปลที่ถูกต้องเพื่อรับ 20 XP</p>
+            <div className="mt-4 grid gap-2">
+              {["หนังสือ", "โต๊ะ", "กระดาน"].map((answer) => (
+                <button key={answer} type="button" disabled={quizAnswered} className={`${button.secondary} min-h-12 w-full px-4 text-left`} onClick={() => {
+                  if (quizAnswered) return;
+                  setQuizAnswered(true);
+                  if (answer === "หนังสือ") setClassroomScore((score) => score + 20);
+                  setClassroomActivity(answer === "หนังสือ" ? "ถูกต้อง! +20 XP" : "ยังไม่ถูก ลองภารกิจถัดไป");
+                }}>{answer}</button>
+              ))}
+            </div>
+            {quizAnswered && <button type="button" className={`${button.primary} mt-4 min-h-10 px-4`} onClick={() => setQuizOpen(false)}>กลับเข้าห้องเรียน</button>}
+          </div>
         </div>
       )}
 
