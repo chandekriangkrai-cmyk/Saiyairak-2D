@@ -110,7 +110,7 @@ export const SPACES: Record<string, SpaceConfig> = {
   },
 };
 
-export const DEFAULT_SPACE_ID = "garden-library";
+export const DEFAULT_SPACE_ID = "classroom";
 
 function withCapabilities(config: SpaceConfig): SpaceConfig {
   return {
