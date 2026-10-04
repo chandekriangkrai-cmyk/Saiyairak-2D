@@ -49,6 +49,7 @@ function collisionWriter(): Plugin {
 }
 
 export default defineConfig({
+  resolve: { preserveSymlinks: true },
   plugins: [react(), tailwindcss(), collisionWriter()],
   server: {
     host: "0.0.0.0",
