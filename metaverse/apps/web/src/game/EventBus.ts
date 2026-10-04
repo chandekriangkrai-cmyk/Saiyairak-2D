@@ -7,6 +7,8 @@ export const SpaceEvent = {
   PlayerName: "space:player-name",
   PlayerAppearance: "space:player-appearance",
   MoveDirection: "space:move-direction",
+  SchoolTimeInteract: "school-time:interact",
+  SchoolTimeAction: "school-time:action",
   ZoomIn: "zoom:in",
   ZoomOut: "zoom:out",
 } as const;

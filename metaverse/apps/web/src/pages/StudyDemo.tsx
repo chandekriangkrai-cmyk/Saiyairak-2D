@@ -1,5 +1,5 @@
 import GameCanvas from "../components/GameCanvas";
-import SpaceControls, { MobileJoystick } from "../components/SpaceControls";
+import SpaceControls, { MobileJoystick, SchoolActionButtons } from "../components/SpaceControls";
 import { useAuth } from "../lib/auth";
 import { hudBaseClass } from "../lib/ui";
 
@@ -15,6 +15,7 @@ export default function StudyDemo() {
         <SpaceControls />
       </div>
       <MobileJoystick />
+      <SchoolActionButtons />
     </div>
   );
 }

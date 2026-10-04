@@ -10,7 +10,7 @@ import { useStudyTimer } from "../hooks/useStudyTimer";
 import { useSpaceMusic } from "../hooks/useSpaceMusic";
 import { useVideoChat } from "../hooks/useVideoChat";
 import { usePresentation, resolveZone } from "../hooks/usePresentation";
-import SpaceControls, { MobileJoystick } from "../components/SpaceControls";
+import SpaceControls, { MobileJoystick, SchoolActionButtons } from "../components/SpaceControls";
 import WokaPreview from "../components/WokaPreview";
 import LeaderboardDialog from "../components/LeaderboardDialog";
 import VideoDock from "../components/VideoDock";
@@ -383,7 +383,8 @@ export default function Arena() {
         )}
       </div>
 
-      {!inputBlocked && <MobileJoystick />}
+      {!inputBlocked && <MobileJoystick />
+      <SchoolActionButtons />}
 
       <div
         className={cx(

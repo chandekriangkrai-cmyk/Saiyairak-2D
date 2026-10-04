@@ -233,3 +233,14 @@ export function MobileJoystick() {
     </div>
   );
 }
+
+export function SchoolActionButtons() {
+  const action = () => EventBus.emit(SpaceEvent.SchoolTimeAction, "A");
+  const back = () => EventBus.emit(SpaceEvent.SchoolTimeAction, "B");
+  return (
+    <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] right-3 z-[6] flex items-end gap-2 [@media(pointer:coarse)]:flex">
+      <button type="button" onPointerDown={back} aria-label="ย้อนกลับ" className="grid h-12 w-12 place-items-center rounded-full border border-line-strong bg-dusk-raised font-bold text-moonlight shadow-lg active:scale-95">B</button>
+      <button type="button" onPointerDown={action} aria-label="โต้ตอบ" className="grid h-14 w-14 place-items-center rounded-full border border-coin bg-coin font-black text-[#201800] shadow-lg active:scale-95">A</button>
+    </div>
+  );
+}

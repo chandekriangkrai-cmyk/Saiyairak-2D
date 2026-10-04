@@ -6,6 +6,7 @@ import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
 import type { CollisionEditor } from "../systems/CollisionEditor";
 import { Player } from "../entities/Player";
+import { Woka } from "../entities/Woka";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import {
   SPACE_FOREGROUND_TEXTURE,
@@ -33,6 +34,17 @@ export class SpaceScene extends Phaser.Scene {
   private wasd!: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
   private virtualDirection: Direction | null = null;
   private movementEnabled = true;
+  private interactionTarget: { x: number; y: number; label: string } | null = null;
+  private schoolNpc!: Woka;
+  private dialogueBox!: Phaser.GameObjects.Container;
+  private dialogueText!: Phaser.GameObjects.Text;
+  private dialoguePages = [
+    "สวัสดีนักเรียน! ยินดีต้อนรับสู่ School Time",
+    "วันนี้เราจะเริ่มเรียนภาษาอังกฤษกัน",
+    "เดินไปที่แท็บเล็ต แล้วกด A เพื่อเริ่มกิจกรรม",
+  ];
+  private dialogueIndex = -1;
+  private saveKey = "school-time-save-v1";
 
   constructor() {
     super("space");
@@ -80,6 +92,21 @@ export class SpaceScene extends Phaser.Scene {
       },
     );
 
+    const saved = this.readSave();
+    if (saved) {
+      this.movement.forceSetTile(saved);
+    }
+
+    this.schoolNpc = new Woka(this, tileSize);
+    this.schoolNpc.setPosition((7.5) * tileSize, (4 + 1) * tileSize);
+    this.schoolNpc.setDepth(DEPTH_PLAYER - 1);
+    const npcLabel = this.add.text(7.5 * tileSize, 4 * tileSize - 8, "ครู", {
+      fontFamily: "sans-serif", fontSize: "12px", color: "#ffffff", backgroundColor: "#14162bcc", padding: { x: 4, y: 2 },
+    }).setOrigin(0.5, 1).setDepth(DEPTH_PLAYER + 1);
+    this.schoolNpc.setData("tile", { x: 7, y: 4 });
+    this.schoolNpc.setData("label", "ครู");
+    this.schoolNpc.setData("labelObject", npcLabel);
+
     this.cameraController = new CameraController(
       this,
       this.player,
@@ -90,6 +117,12 @@ export class SpaceScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as SpaceScene["wasd"];
+
+    // School Time: keyboard/mobile action hook. The target is intentionally data-driven
+    // so NPCs and interactive objects can be added without changing movement logic.
+    this.input.keyboard?.on("keydown-SPACE", () => this.tryInteract());
+    this.input.keyboard?.on("keydown-ENTER", () => this.tryInteract());
+    this.input.keyboard?.on("keydown-B", () => this.closeDialogue());
 
     if (import.meta.env.DEV) {
       import("../systems/CollisionEditor").then(({ CollisionEditor }) => {
@@ -107,16 +140,23 @@ export class SpaceScene extends Phaser.Scene {
     EventBus.on(SpaceEvent.PlayerName, this.onPlayerName, this);
     EventBus.on(SpaceEvent.PlayerAppearance, this.onPlayerAppearance, this);
     EventBus.on(SpaceEvent.MoveDirection, this.onMoveDirection, this);
+    EventBus.on(SpaceEvent.SchoolTimeAction, this.onSchoolAction, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       EventBus.off(SpaceEvent.PlayerName, this.onPlayerName, this);
       EventBus.off(SpaceEvent.PlayerAppearance, this.onPlayerAppearance, this);
       EventBus.off(SpaceEvent.MoveDirection, this.onMoveDirection, this);
+      EventBus.off(SpaceEvent.SchoolTimeAction, this.onSchoolAction, this);
+      this.input.keyboard?.off("keydown-SPACE");
+      this.input.keyboard?.off("keydown-ENTER");
+      this.input.keyboard?.off("keydown-B");
     });
     EventBus.emit(SpaceEvent.SceneReady);
   }
 
   update(_time: number, delta: number): void {
     this.movement.update(this.readDirection());
+    this.updateInteractionTarget();
+    this.autosave();
     this.cameraController.update(delta);
     this.editor?.update();
   }
@@ -150,6 +190,75 @@ export class SpaceScene extends Phaser.Scene {
 
   private onMoveDirection(direction: Direction | null): void {
     this.virtualDirection = this.movementEnabled ? direction : null;
+  }
+
+  private tryInteract(): void {
+    if (this.interactionTarget) {
+      this.openDialogue();
+      EventBus.emit(SpaceEvent.SchoolTimeInteract, this.interactionTarget);
+    }
+  }
+
+  private onSchoolAction(action: string): void {
+    if (action === "B") {
+      this.closeDialogue();
+      return;
+    }
+    this.tryInteract();
+  }
+
+  private updateInteractionTarget(): void {
+    const npcTile = this.schoolNpc.getData("tile") as { x: number; y: number };
+    const tile = this.movement.tile;
+    const near = Math.max(Math.abs(tile.x - npcTile.x), Math.abs(tile.y - npcTile.y)) <= 1;
+    this.interactionTarget = near ? { ...npcTile, label: "ครู" } : null;
+  }
+
+  private openDialogue(): void {
+    if (!this.dialogueBox) {
+      const width = Math.min(this.scale.width - 24, 760);
+      const bg = this.add.rectangle(0, 0, width, 104, 0x14162b, 0.96).setOrigin(0, 0);
+      bg.setStrokeStyle(2, 0xffc53d, 1);
+      this.dialogueText = this.add.text(16, 14, "", { fontFamily: "sans-serif", fontSize: "16px", color: "#ffffff", wordWrap: { width: width - 32 } });
+      const hint = this.add.text(width - 16, 80, "A: ต่อ  B: ปิด", { fontFamily: "sans-serif", fontSize: "11px", color: "#ffc53d" }).setOrigin(1, 0);
+      this.dialogueBox = this.add.container(12, this.scale.height - 120, [bg, this.dialogueText, hint]).setScrollFactor(0).setDepth(1000);
+    }
+    this.dialogueIndex = Math.min(this.dialogueIndex + 1, this.dialoguePages.length - 1);
+    this.dialogueText.setText(this.dialoguePages[this.dialogueIndex]!);
+    this.dialogueBox.setVisible(true);
+    this.setKeyboardEnabled(false);
+  }
+
+  private closeDialogue(): void {
+    if (!this.dialogueBox?.visible) return;
+    if (this.dialogueIndex < this.dialoguePages.length - 1) {
+      this.dialogueIndex++;
+      this.dialogueText.setText(this.dialoguePages[this.dialogueIndex]!);
+      return;
+    }
+    this.dialogueIndex = -1;
+    this.dialogueBox.setVisible(false);
+    this.setKeyboardEnabled(true);
+  }
+
+  private autosave(): void {
+    if (this.dialogueBox?.visible) return;
+    const t = this.movement.tile;
+    try { localStorage.setItem(this.saveKey, JSON.stringify({ x: t.x, y: t.y, space: this.spaceConfig.id, savedAt: Date.now() })); } catch {}
+  }
+
+  private readSave(): { x: number; y: number } | null {
+    try {
+      const raw = localStorage.getItem(this.saveKey);
+      if (!raw) return null;
+      const data = JSON.parse(raw) as { x?: number; y?: number; space?: string };
+      if (data.space !== this.spaceConfig.id || typeof data.x !== "number" || typeof data.y !== "number") return null;
+      return { x: data.x, y: data.y };
+    } catch { return null; }
+  }
+
+  setInteractionTarget(target: { x: number; y: number; label: string } | null): void {
+    this.interactionTarget = target;
   }
 
   private readDirection(): Direction | null {
