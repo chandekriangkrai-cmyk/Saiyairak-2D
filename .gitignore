@@ -2,3 +2,6 @@ doc/
 .env
 .env.*
 !.env.example
+
+# Large local classroom source archive
+2dClassroomAssetPackByStyloo.zip
