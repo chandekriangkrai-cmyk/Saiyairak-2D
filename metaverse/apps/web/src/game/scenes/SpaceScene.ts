@@ -24,8 +24,10 @@ const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
 const TABLET_TILE: TileCoord = { x: 10, y: 3 };
 
 type InteractionTarget = TileCoord & {
-  type: "tablet";
+  type: "tablet" | "classroom-object";
   label: string;
+  objectId?: string;
+  interaction?: string;
 };
 
 export class SpaceScene extends Phaser.Scene {
@@ -306,8 +308,24 @@ export class SpaceScene extends Phaser.Scene {
 
     EventBus.emit(SpaceEvent.SchoolTimeInteract, target);
     this.autosave(true);
-    this.pauseMovement();
-    EventBus.emit(SpaceEvent.SchoolTimeLearningApp);
+
+    if (target.type === "tablet") {
+      this.pauseMovement();
+      EventBus.emit(SpaceEvent.SchoolTimeLearningApp);
+      return;
+    }
+
+    // Classroom furniture interactions are intentionally lightweight until
+    // their dedicated learning activities are wired into the UI. Keep the
+    // player in control instead of opening the tablet app for every object.
+    this.interactionHint
+      .setText(`✓ ${target.label}`)
+      .setVisible(true);
+    this.time.delayedCall(900, () => {
+      if (this.interactionTarget?.objectId === target.objectId) {
+        this.updateInteractionTarget();
+      }
+    });
   }
 
   private updateInteractionTarget(): void {
@@ -337,6 +355,29 @@ export class SpaceScene extends Phaser.Scene {
       return;
     }
 
+    const object = CLASSROOM_V2_OBJECTS.find((candidate) => {
+      const w = candidate.size?.w ?? 1;
+      const h = candidate.size?.h ?? 1;
+      return (
+        front.x >= candidate.tile.x &&
+        front.x < candidate.tile.x + w &&
+        front.y >= candidate.tile.y &&
+        front.y < candidate.tile.y + h &&
+        Boolean(candidate.interaction)
+      );
+    });
+
+    if (object?.interaction) {
+      this.setCurrentInteractionTarget({
+        ...front,
+        type: "classroom-object",
+        label: this.classroomInteractionLabel(object.interaction),
+        objectId: object.id,
+        interaction: object.interaction,
+      });
+      return;
+    }
+
     this.setCurrentInteractionTarget(null);
   }
 
@@ -348,8 +389,27 @@ export class SpaceScene extends Phaser.Scene {
       return;
     }
     this.interactionHint
-      .setText("กด Enter / Space หรือปุ่มโต้ตอบ เพื่อเปิดแท็บเล็ตภาษาอังกฤษ")
+      .setText(`กด Enter / Space เพื่อ${target.label}`)
       .setVisible(true);
+  }
+
+  private classroomInteractionLabel(interaction: string): string {
+    switch (interaction) {
+      case "open-board":
+        return "เปิดกระดาน";
+      case "teacher-zone":
+        return "เข้าพื้นที่ครู";
+      case "student-seat":
+        return "นั่งโต๊ะเรียน";
+      case "bookshelf":
+        return "เปิดชั้นหนังสือ";
+      case "computer":
+        return "ใช้คอมพิวเตอร์";
+      case "exit-classroom":
+        return "ออกจากห้องเรียน";
+      default:
+        return "โต้ตอบ";
+    }
   }
 
   private pauseMovement(): void {
