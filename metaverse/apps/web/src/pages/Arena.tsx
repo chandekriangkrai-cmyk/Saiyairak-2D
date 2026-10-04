@@ -71,6 +71,8 @@ export default function Arena() {
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
   const [classroomAction, setClassroomAction] = useState<string | null>(null);
+  const [classroomScore, setClassroomScore] = useState(0);
+  const [classroomActivity, setClassroomActivity] = useState<string | null>(null);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
   const inputBlocked =
@@ -101,8 +103,22 @@ export default function Arena() {
       setLearningAppOpen(true);
     };
     const showClassroomAction = (target: { label?: string; interaction?: string }) => {
-      if (target.interaction === "computer" || !target.label) return;
+      if (!target.label) return;
+      const activities: Record<string, { title: string; prompt: string; points: number }> = {
+        "open-board": { title: "กระดานความรู้", prompt: "พร้อมเรียนบทใหม่! +10 XP", points: 10 },
+        "teacher-zone": { title: "พื้นที่ครู", prompt: "ตรวจภารกิจประจำวัน +15 XP", points: 15 },
+        "student-seat": { title: "โต๊ะเรียน", prompt: "เริ่มภารกิจคำศัพท์ +20 XP", points: 20 },
+        bookshelf: { title: "ห้องสมุด", prompt: "ค้นพบคำศัพท์ใหม่ +10 XP", points: 10 },
+        computer: { title: "คอมพิวเตอร์", prompt: "เปิดบทเรียนดิจิทัล", points: 0 },
+        "exit-classroom": { title: "ประตูห้องเรียน", prompt: "จบคาบเรียน", points: 0 },
+      };
+      const activity = target.interaction ? activities[target.interaction] : undefined;
+      if (!activity) return;
       setClassroomAction(target.label);
+      setClassroomActivity(activity.prompt);
+      if (activity.points > 0) {
+        setClassroomScore((score) => score + activity.points);
+      }
     };
     EventBus.on(SpaceEvent.SchoolTimeLearningApp, openLearningApp);
     EventBus.on(SpaceEvent.SchoolTimeInteract, showClassroomAction);
@@ -535,7 +551,10 @@ export default function Arena() {
         <div className="fixed inset-x-0 bottom-20 z-[115] mx-auto w-[min(28rem,calc(100vw-2rem))] rounded-2xl border border-line bg-midnight/95 p-4 text-moonlight shadow-2xl backdrop-blur">
           <div className="text-xs font-semibold uppercase tracking-wide text-coin">Classroom</div>
           <div className="mt-1 text-base font-semibold">{classroomAction}</div>
-          <div className="mt-1 text-xs text-fog">จุดนี้พร้อมต่อยอดเป็นบทเรียนหรือมินิเกมเฉพาะกิจกรรม</div>
+          <div className="mt-1 text-xs text-fog">{classroomActivity ?? "กิจกรรมห้องเรียน"}</div>
+          {classroomScore > 0 && (
+            <div className="mt-2 text-sm font-bold text-coin">⭐ XP ห้องเรียน: {classroomScore}</div>
+          )}
           <button
             type="button"
             className={`${button.primary} mt-3 min-h-10 px-4`}
