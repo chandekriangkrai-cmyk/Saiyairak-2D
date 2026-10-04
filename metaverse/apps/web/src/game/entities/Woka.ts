@@ -22,7 +22,7 @@ const TEACHER_APPEARANCE: WokaAppearance = {
   body: "body-0",
   eyes: "eyes-0",
   hair: "hair-1",
-  clothes: "clothes-63",
+  clothes: "clothes-62",
   hat: "none",
   accessory: "none",
 };
