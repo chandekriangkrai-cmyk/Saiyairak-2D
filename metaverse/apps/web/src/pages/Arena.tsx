@@ -112,8 +112,18 @@ export default function Arena() {
         setLearningAppOpen(false);
       }
     };
+    const onLearningPageMessage = (event: MessageEvent) => {
+      if (event.source !== document.querySelector('iframe[title="English Learning App"]')?.contentWindow) return;
+      if (event.data?.type === "english-learning:close") {
+        setLearningAppOpen(false);
+      }
+    };
+    window.addEventListener("message", onLearningPageMessage);
     window.addEventListener("keydown", closeOnKey);
-    return () => window.removeEventListener("keydown", closeOnKey);
+    return () => {
+      window.removeEventListener("keydown", closeOnKey);
+      window.removeEventListener("message", onLearningPageMessage);
+    };
   }, [learningAppOpen]);
 
   const learningAppUrl = `${import.meta.env.BASE_URL}english-learning/index.html`;
