@@ -574,7 +574,7 @@ export default function Arena() {
           <iframe
             src={learningAppUrl}
             title="English Learning App"
-              ref={learningFrameRef}
+            ref={learningFrameRef}
             className="min-h-0 flex-1 border-0 bg-[#eef5fa]"
             allow="autoplay"
             allowFullScreen
