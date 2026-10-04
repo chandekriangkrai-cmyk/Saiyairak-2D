@@ -113,6 +113,7 @@ export default function Arena() {
       }
     };
     const onLearningPageMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
       if (event.source !== document.querySelector('iframe[title="English Learning App"]')?.contentWindow) return;
       if (event.data?.type === "english-learning:close") {
         setLearningAppOpen(false);
