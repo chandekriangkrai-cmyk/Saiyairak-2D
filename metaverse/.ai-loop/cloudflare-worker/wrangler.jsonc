@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/wrangler.json",
+  "name": "school-time-dev-loop",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-04",
+  "triggers": {
+    "crons": ["0 */6 * * *"]
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "TASK_QUEUE",
+        "queue": "school-time-dev-loop"
+      }
+    ]
+  }
+}

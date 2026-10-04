@@ -1,0 +1,9 @@
+{
+  "project": "School Time / TrueMetaverse",
+  "branch": "ai/dev-loop",
+  "production_branch": "main",
+  "cycle": 0,
+  "status": "ready",
+  "next_focus": "automated QA and classroom movement/collision regression",
+  "production_deploy": false
+}
