@@ -16,6 +16,7 @@ export class MultiplayerSpaceScene extends SpaceScene {
   private localUserId: string | null = null;
   private knownAppearances = new Map<string, WokaAppearance>();
   private knownUsernames = new Map<string, string>();
+  private lastSentTile: { x: number; y: number } | null = null;
 
   constructor(private callbacks: ArenaCallbacks) {
     super();
@@ -34,6 +35,8 @@ export class MultiplayerSpaceScene extends SpaceScene {
 
   protected override onLocalStep(): void {
     const tile = this.movement.tile;
+    if (this.lastSentTile?.x === tile.x && this.lastSentTile?.y === tile.y) return;
+    this.lastSentTile = { x: tile.x, y: tile.y };
     this.callbacks.onMoveAttempt(tile.x, tile.y);
     this.callbacks.onLocalTile?.(tile.x, tile.y);
   }
@@ -41,6 +44,7 @@ export class MultiplayerSpaceScene extends SpaceScene {
   spawnLocal(x: number, y: number, userId: string): void {
     this.localUserId = userId;
     this.movement.forceSetTile({ x, y });
+    this.lastSentTile = { x, y };
     this.cameras.main.centerOn(this.player.x, this.player.y);
     this.callbacks.onLocalTile?.(x, y);
   }
@@ -74,6 +78,7 @@ export class MultiplayerSpaceScene extends SpaceScene {
 
   rollbackLocal(x: number, y: number): void {
     this.movement.forceSetTile({ x, y });
+    this.lastSentTile = { x, y };
     this.callbacks.onLocalTile?.(x, y);
   }
 

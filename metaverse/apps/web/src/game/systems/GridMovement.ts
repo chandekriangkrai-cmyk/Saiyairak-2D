@@ -4,9 +4,6 @@ import type { CollisionGrid } from "./CollisionGrid";
 
 export type Direction = "up" | "down" | "left" | "right";
 
-export const MOVE_DURATION_MS = 170;
-const INPUT_BUFFER_MS = 60;
-
 const DELTAS: Record<Direction, TileCoord> = {
   up: { x: 0, y: -1 },
   down: { x: 0, y: 1 },
@@ -14,19 +11,23 @@ const DELTAS: Record<Direction, TileCoord> = {
   right: { x: 1, y: 0 },
 };
 
+const DEFAULT_SPEED_TILES_PER_SECOND = 4.25;
+const MIN_COLLISION_RADIUS = 9;
+
 export type GridMovementHooks = {
   onWalk?: (dir: Direction) => void;
   onFace?: (dir: Direction) => void;
   onIdle?: (facing: Direction) => void;
 };
 
+/** Smooth top-down movement while preserving the existing public API. */
 export class GridMovement {
-  private tileX: number;
-  private tileY: number;
+  private worldX: number;
+  private worldY: number;
   private facingDir: Direction = "down";
-  private tween: Phaser.Tweens.Tween | null = null;
-  private queued: Direction | null = null;
   private walking = false;
+  private lastWalkHookAt = 0;
+  private readonly speedTilesPerSecond = DEFAULT_SPEED_TILES_PER_SECOND;
 
   constructor(
     private scene: Phaser.Scene,
@@ -36,13 +37,13 @@ export class GridMovement {
     start: TileCoord,
     private hooks: GridMovementHooks = {},
   ) {
-    this.tileX = start.x;
-    this.tileY = start.y;
-    this.snapToTile();
+    this.worldX = (start.x + 0.5) * this.tileSize;
+    this.worldY = (start.y + 1) * this.tileSize;
+    this.snapToWorld();
   }
 
   get tile(): TileCoord {
-    return { x: this.tileX, y: this.tileY };
+    return this.worldToTile(this.worldX, this.worldY);
   }
 
   get facing(): Direction {
@@ -50,86 +51,96 @@ export class GridMovement {
   }
 
   get moving(): boolean {
-    return this.tween !== null;
+    return this.walking;
   }
 
-  update(intent: Direction | null): void {
-    if (this.tween) {
-      if (intent && this.remainingMs() <= INPUT_BUFFER_MS) this.queued = intent;
+  update(intent: Direction | null, deltaMs = 16.67): void {
+    if (!intent) {
+      if (this.walking) {
+        this.walking = false;
+        this.hooks.onIdle?.(this.facingDir);
+      }
       return;
     }
-    const dir = this.queued ?? intent;
-    this.queued = null;
-    if (dir) {
-      this.tryStep(dir);
-    } else if (this.walking) {
+
+    if (intent !== this.facingDir) {
+      this.facingDir = intent;
+      this.hooks.onFace?.(intent);
+    }
+
+    const distance =
+      (this.tileSize * this.speedTilesPerSecond * Math.max(0, deltaMs)) / 1000;
+    const delta = DELTAS[intent];
+    const previousX = this.worldX;
+    const previousY = this.worldY;
+
+    const nextX = this.worldX + delta.x * distance;
+    if (this.canOccupy(nextX, this.worldY)) this.worldX = nextX;
+
+    const nextY = this.worldY + delta.y * distance;
+    if (this.canOccupy(this.worldX, nextY)) this.worldY = nextY;
+
+    const moved = this.worldX !== previousX || this.worldY !== previousY;
+    this.snapToWorld();
+
+    if (moved) {
+      this.walking = true;
+      const now = this.scene.time.now;
+      if (now - this.lastWalkHookAt >= 50) {
+        this.lastWalkHookAt = now;
+        this.hooks.onWalk?.(intent);
+      }
+    } else {
       this.walking = false;
-      this.hooks.onIdle?.(this.facingDir);
+      this.hooks.onFace?.(intent);
     }
   }
 
   step(dir: Direction): boolean {
-    if (this.tween) {
-      this.queued = dir;
-      return false;
-    }
-    return this.tryStep(dir);
-  }
-
-  forceSetTile(tile: TileCoord): void {
-    this.tween?.remove();
-    this.tween = null;
-    this.queued = null;
-    this.tileX = tile.x;
-    this.tileY = tile.y;
-    this.snapToTile();
-  }
-
-  private tryStep(dir: Direction): boolean {
     this.facingDir = dir;
-    const nx = this.tileX + DELTAS[dir].x;
-    const ny = this.tileY + DELTAS[dir].y;
-    if (this.grid.isBlocked(nx, ny)) {
-      this.walking = false;
-      this.hooks.onFace?.(dir);
-      return false;
-    }
-    this.tileX = nx;
-    this.tileY = ny;
+    this.hooks.onFace?.(dir);
+    const distance = this.tileSize * 0.25;
+    const delta = DELTAS[dir];
+    const nextX = this.worldX + delta.x * distance;
+    const nextY = this.worldY + delta.y * distance;
+    if (!this.canOccupy(nextX, nextY)) return false;
+    this.worldX = nextX;
+    this.worldY = nextY;
     this.walking = true;
+    this.snapToWorld();
     this.hooks.onWalk?.(dir);
-    this.tween = this.scene.tweens.add({
-      targets: this.target,
-      x: this.pixelX(nx),
-      y: this.pixelY(ny),
-      duration: MOVE_DURATION_MS,
-      ease: "Linear",
-      onComplete: () => {
-        this.tween = null;
-        if (this.queued) {
-          const next = this.queued;
-          this.queued = null;
-          this.tryStep(next);
-        }
-      },
-    });
     return true;
   }
 
-  private remainingMs(): number {
-    if (!this.tween) return 0;
-    return Math.max(0, MOVE_DURATION_MS * (1 - this.tween.progress));
+  forceSetTile(tile: TileCoord): void {
+    this.worldX = (tile.x + 0.5) * this.tileSize;
+    this.worldY = (tile.y + 1) * this.tileSize;
+    this.walking = false;
+    this.snapToWorld();
   }
 
-  private snapToTile(): void {
-    this.target.setPosition(this.pixelX(this.tileX), this.pixelY(this.tileY));
+  private canOccupy(worldX: number, worldY: number): boolean {
+    const radius = Math.max(MIN_COLLISION_RADIUS, Math.min(this.tileSize * 0.2, 12));
+    const samples = [
+      [worldX - radius, worldY - radius],
+      [worldX + radius, worldY - radius],
+      [worldX - radius, worldY + radius],
+      [worldX + radius, worldY + radius],
+    ];
+    return samples.every(([x, y]) => {
+      const tile = this.worldToTile(x, y);
+      return !this.grid.isBlocked(tile.x, tile.y);
+    });
   }
 
-  private pixelX(tx: number): number {
-    return (tx + 0.5) * this.tileSize;
+  private worldToTile(worldX: number, worldY: number): TileCoord {
+    return {
+      x: Math.floor(worldX / this.tileSize),
+      y: Math.floor(worldY / this.tileSize) - 1,
+    };
   }
 
-  private pixelY(ty: number): number {
-    return (ty + 1) * this.tileSize;
+  private snapToWorld(): void {
+    this.target.setPosition(this.worldX, this.worldY);
   }
 }

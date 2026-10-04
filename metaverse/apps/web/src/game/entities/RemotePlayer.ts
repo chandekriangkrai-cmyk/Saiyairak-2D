@@ -1,18 +1,20 @@
-import type Phaser from "phaser";
+import Phaser from "phaser";
 import type { TileCoord } from "../config/spaces";
 import type { CollisionGrid } from "../systems/CollisionGrid";
-import { GridMovement, type Direction } from "../systems/GridMovement";
+import type { Direction } from "../systems/GridMovement";
 import { Player } from "./Player";
+
+const REMOTE_MOVE_MS = 170;
 
 export class RemotePlayer {
   readonly player: Player;
-  private movement: GridMovement;
   private serverTile: TileCoord;
+  private tween: Phaser.Tweens.Tween | null = null;
 
   constructor(
     scene: Phaser.Scene,
-    grid: CollisionGrid,
-    tileSize: number,
+    _grid: CollisionGrid,
+    private readonly tileSize: number,
     readonly userId: string,
     start: TileCoord,
     depth: number,
@@ -20,45 +22,55 @@ export class RemotePlayer {
     this.player = new Player(scene, 0, 0, tileSize);
     this.player.setDepth(depth);
     this.serverTile = { ...start };
-    this.movement = new GridMovement(
-      scene,
-      grid,
-      this.player,
-      tileSize,
-      start,
-      {
-        onWalk: (dir) => this.player.playWalk(dir),
-        onFace: (dir) => this.player.faceIdle(dir),
-        onIdle: (dir) => this.player.faceIdle(dir),
-      },
-    );
+    this.snapToTile(start);
   }
 
   update(): void {
-    this.movement.update(null);
+    // Remote players are server-authoritative. Their visual position is driven
+    // by server updates rather than the local collision controller.
   }
 
   applyPosition(tile: TileCoord): void {
-    const dx = tile.x - this.serverTile.x;
-    const dy = tile.y - this.serverTile.y;
-    const dir = singleStepDirection(dx, dy);
-    if (!this.movement.moving) {
-      const at = this.movement.tile;
-      if (at.x !== this.serverTile.x || at.y !== this.serverTile.y) {
-        this.movement.forceSetTile(this.serverTile);
-      }
-    }
+    if (tile.x === this.serverTile.x && tile.y === this.serverTile.y) return;
+
+    const direction = singleStepDirection(
+      tile.x - this.serverTile.x,
+      tile.y - this.serverTile.y,
+    );
     this.serverTile = { ...tile };
-    if (dir) {
-      this.movement.step(dir);
-    } else {
-      this.movement.forceSetTile(tile);
-    }
+
+    if (direction) this.player.playWalk(direction);
+
+    this.tween?.stop();
+    this.tween = this.player.scene.tweens.add({
+      targets: this.player,
+      x: this.pixelX(tile.x),
+      y: this.pixelY(tile.y),
+      duration: REMOTE_MOVE_MS,
+      ease: "Linear",
+      onComplete: () => {
+        this.tween = null;
+        if (direction) this.player.faceIdle(direction);
+      },
+    });
   }
 
   destroy(): void {
-    this.movement.forceSetTile(this.serverTile);
+    this.tween?.stop();
+    this.tween = null;
     this.player.destroy();
+  }
+
+  private snapToTile(tile: TileCoord): void {
+    this.player.setPosition(this.pixelX(tile.x), this.pixelY(tile.y));
+  }
+
+  private pixelX(x: number): number {
+    return (x + 0.5) * this.tileSize;
+  }
+
+  private pixelY(y: number): number {
+    return (y + 1) * this.tileSize;
   }
 }
 
