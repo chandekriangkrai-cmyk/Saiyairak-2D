@@ -4,6 +4,7 @@ import type { SpaceConfig, TileCoord } from "../config/spaces";
 import { CollisionGrid, type CollisionRows } from "../systems/CollisionGrid";
 import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
+import { CLASSROOM_V2_OBJECTS } from "../config/classroomV2";
 import type { CollisionEditor } from "../systems/CollisionEditor";
 import { applyClassroomFurnitureOrientation } from "../systems/ClassroomFurnitureOrientation";
 import { Player } from "../entities/Player";
