@@ -70,6 +70,7 @@ export default function Arena() {
   const [copied, setCopied] = useState(false);
   const [watching, setWatching] = useState(false);
   const [learningAppOpen, setLearningAppOpen] = useState(false);
+  const learningFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [tabletMenuOpen, setTabletMenuOpen] = useState(false);
 
   const roundMovementBlocked = hideSeekMovementBlocked(conn.hideSeekState);
@@ -114,7 +115,7 @@ export default function Arena() {
     };
     const onLearningPageMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
-      if (event.source !== document.querySelector('iframe[title="English Learning App"]')?.contentWindow) return;
+      if (event.source !== learningFrameRef.current?.contentWindow) return;
       if (event.data?.type === "english-learning:close") {
         setLearningAppOpen(false);
       }
@@ -570,6 +571,7 @@ export default function Arena() {
           <iframe
             src={learningAppUrl}
             title="English Learning App"
+              ref={learningFrameRef}
             className="min-h-0 flex-1 border-0 bg-[#eef5fa]"
             allow="autoplay"
             allowFullScreen
