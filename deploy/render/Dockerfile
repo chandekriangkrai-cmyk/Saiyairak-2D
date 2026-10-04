@@ -19,6 +19,9 @@ RUN bun install --frozen-lockfile
 
 FROM dependencies AS source
 COPY metaverse/ .
+# Prisma 7 loads prisma.config.ts during image build; schema generation does not
+# need a live database, but the config requires DATABASE_URL to exist.
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build
 RUN cd packages/db && bunx prisma generate
 
 FROM source AS web-build
