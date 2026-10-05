@@ -26,7 +26,11 @@ import type { ChatEntry } from "./useArenaChat";
 export type UserMeta = { username: string | null; appearance: WokaAppearance };
 
 export type ConnectionStatus =
-  "connecting" | "live" | "closed" | "replaced" | "error";
+  | "connecting"
+  | "live"
+  | "closed"
+  | "replaced"
+  | "error";
 
 export function useArenaConnection({
   spaceId,
@@ -222,6 +226,9 @@ export function useArenaConnection({
           });
         },
         chat: (payload) => {
+          withScene((scene) =>
+            scene.showChatBubble(payload.userId, payload.text),
+          );
           pushMessage({
             kind: "user",
             userId: payload.userId,
