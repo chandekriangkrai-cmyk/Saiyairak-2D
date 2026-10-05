@@ -576,9 +576,9 @@ export default function Arena() {
             title="English Learning App"
             ref={learningFrameRef}
             onLoad={() => learningFrameRef.current?.contentWindow?.focus()}
-            className="min-h-0 flex-1 border-0 bg-[#eef5fa] touch-manipulation"
-            style={{ touchAction: "manipulation" }}
-            allow="autoplay"
+            className="pointer-events-auto min-h-0 flex-1 border-0 bg-[#eef5fa] touch-auto"
+            style={{ touchAction: "auto", WebkitOverflowScrolling: "touch" }}
+            allow="autoplay; fullscreen"
             allowFullScreen
           />
         </div>
