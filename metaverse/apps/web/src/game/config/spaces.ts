@@ -83,7 +83,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     imagePath: "/assets/spaces/virtual-office/space.png",
     collisionPath: "/assets/spaces/virtual-office/collision.json",
     tileSize: 40,
-    spawnTile: { x: 20, y: 14 },
+    spawnTile: { x: 19, y: 13 },
     zones: [{ id: "presentation", rect: { x: 2, y: 9, w: 8, h: 7 } }],
     presentation: {
       zone: "presentation",
