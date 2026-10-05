@@ -96,7 +96,8 @@ export const SPACES: Record<string, SpaceConfig> = {
     imagePath: "/assets/spaces/classroom/original-classroom.png",
     collisionPath: "/assets/spaces/classroom/original-collision.json?door=3",
     tileSize: 40,
-    spawnTile: { x: 20, y: 14 },
+    // Start clearly inside the classroom on the open lower-center aisle.
+    spawnTile: { x: 20, y: 17 },
     zones: [],
   },
   "hide-and-seek": {
