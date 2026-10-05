@@ -111,6 +111,10 @@ export class SpaceScene extends Phaser.Scene {
       this.createTablet(tileSize);
     }
 
+    if (this.spaceConfig.id === "cafe") {
+      this.createCafeFurniture(tileSize);
+    }
+
     this.cameraController = new CameraController(
       this,
       this.player,
@@ -243,6 +247,81 @@ export class SpaceScene extends Phaser.Scene {
       )
       .setOrigin(0.5, 1)
       .setDepth(DEPTH_PLAYER + 2);
+  }
+
+  private createCafeFurniture(tileSize: number): void {
+    // Cafe decoration is made from real Phaser sprites, not baked into the map image.
+    const makeTexture = (key: string, draw: (g: Phaser.GameObjects.Graphics) => void) => {
+      if (this.textures.exists(key)) return;
+      const g = this.add.graphics();
+      draw(g);
+      g.generateTexture(key, tileSize * 2, tileSize * 2);
+      g.destroy();
+    };
+
+    makeTexture("cafe-table", (g) => {
+      g.fillStyle(0x4a2b20, 1); g.fillEllipse(40, 45, 62, 34);
+      g.fillStyle(0xa66a3c, 1); g.fillEllipse(40, 34, 66, 38);
+      g.fillStyle(0xc48a4d, 1); g.fillEllipse(40, 31, 56, 30);
+      g.fillStyle(0x6a3d28, 1); g.fillRect(34, 45, 12, 22);
+    });
+    makeTexture("cafe-chair", (g) => {
+      g.fillStyle(0x3b2924, 1); g.fillRoundedRect(22, 28, 36, 30, 7);
+      g.fillStyle(0x8d5b3d, 1); g.fillRoundedRect(26, 32, 28, 18, 5);
+      g.fillStyle(0x4b3025, 1); g.fillRect(28, 55, 5, 14); g.fillRect(47, 55, 5, 14);
+    });
+    makeTexture("cafe-sofa", (g) => {
+      g.fillStyle(0x34231f, 1); g.fillRoundedRect(10, 24, 60, 38, 9);
+      g.fillStyle(0x765047, 1); g.fillRoundedRect(14, 20, 52, 34, 8);
+      g.fillStyle(0x93635a, 1); g.fillRoundedRect(20, 26, 40, 22, 5);
+      g.fillStyle(0x4b3028, 1); g.fillRect(18, 58, 7, 8); g.fillRect(55, 58, 7, 8);
+    });
+    makeTexture("cafe-plant", (g) => {
+      g.fillStyle(0x9b6035, 1); g.fillRoundedRect(28, 48, 24, 18, 5);
+      g.fillStyle(0x3f7e49, 1); g.fillEllipse(25, 35, 26, 38); g.fillEllipse(48, 28, 28, 42); g.fillEllipse(62, 38, 25, 34);
+      g.fillStyle(0x66a95e, 1); g.fillEllipse(38, 25, 22, 34); g.fillEllipse(54, 18, 20, 32);
+    });
+    makeTexture("cafe-shelf", (g) => {
+      g.fillStyle(0x3b2821, 1); g.fillRect(16, 12, 48, 56);
+      g.fillStyle(0x8b5a39, 1); g.fillRect(20, 18, 40, 4); g.fillRect(20, 36, 40, 4); g.fillRect(20, 54, 40, 4);
+      g.fillStyle(0x6d8a72, 1); g.fillRect(24, 24, 9, 11); g.fillStyle(0x9a6a45, 1); g.fillRect(38, 24, 8, 11); g.fillStyle(0x6d6a8f, 1); g.fillRect(50, 24, 7, 11);
+      g.fillStyle(0x9b6b48, 1); g.fillRect(25, 42, 8, 11); g.fillStyle(0x718b66, 1); g.fillRect(38, 42, 9, 11); g.fillStyle(0x9b7b56, 1); g.fillRect(51, 42, 7, 11);
+    });
+    makeTexture("cafe-counter", (g) => {
+      g.fillStyle(0x3a251e, 1); g.fillRoundedRect(6, 20, 68, 34, 7);
+      g.fillStyle(0x8d5735, 1); g.fillRoundedRect(8, 17, 64, 20, 5);
+      g.fillStyle(0xb77b43, 1); g.fillRect(12, 18, 56, 5);
+      g.fillStyle(0x4d3328, 1); g.fillRect(15, 40, 50, 9);
+    });
+    makeTexture("cafe-lamp", (g) => {
+      g.fillStyle(0x2f2522, 1); g.fillRect(38, 8, 4, 18);
+      g.fillStyle(0xf0c86e, 1); g.fillCircle(40, 35, 12);
+      g.fillStyle(0xffe9a6, 0.22); g.fillCircle(40, 35, 25);
+    });
+    makeTexture("cafe-rug", (g) => {
+      g.fillStyle(0x634a43, 1); g.fillRoundedRect(8, 22, 64, 36, 8);
+      g.lineStyle(3, 0xb1876d, 1); g.strokeRoundedRect(12, 26, 56, 28, 6);
+    });
+
+    const sprite = (key: string, x: number, y: number, scale = 1) =>
+      this.add.sprite((x + 0.5) * tileSize, (y + 0.5) * tileSize, key)
+        .setScale(scale).setDepth(DEPTH_SPACE + y + 1);
+
+    // Furniture occupies the blocked cells from collision.json.
+    [[6,7],[12,7],[6,12],[12,12],[18,12]].forEach(([x,y]) => sprite("cafe-table", x, y));
+    [[5,6.1],[7,6.1],[5,8.5],[7,8.5],[11,6.1],[13,6.1],[11,8.5],[13,8.5],
+      [5,11.1],[7,11.1],[5,13.5],[7,13.5],[11,11.1],[13,11.1],[11,13.5],[13,13.5],
+      [17,11.1],[19,11.1],[17,13.5],[19,13.5]].forEach(([x,y]) => sprite("cafe-chair", x, y, .8));
+    sprite("cafe-counter", 22, 4, 1.15);
+    sprite("cafe-shelf", 22, 9, .9);
+    sprite("cafe-sofa", 4, 15, 1.0);
+    sprite("cafe-sofa", 22, 15, 1.0);
+    sprite("cafe-plant", 2, 4, .9);
+    sprite("cafe-plant", 26, 16, .9);
+    sprite("cafe-lamp", 4, 3, .85);
+    sprite("cafe-lamp", 14, 3, .85);
+    sprite("cafe-lamp", 24, 3, .85);
+    sprite("cafe-rug", 14, 10, 1.5);
   }
 
   private onPlayerName(name: string): void {

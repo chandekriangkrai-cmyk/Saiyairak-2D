@@ -61,6 +61,14 @@ export function tilesWithin(a: TileCoord, b: TileCoord, radius: number) {
 }
 
 export const SPACES: Record<string, SpaceConfig> = {
+  cafe: {
+    id: "cafe",
+    imagePath: "/assets/spaces/cafe/space.svg",
+    collisionPath: "/assets/spaces/cafe/collision.json",
+    tileSize: 40,
+    spawnTile: { x: 14, y: 17 },
+    zones: [],
+  },
   "garden-library": {
     id: "garden-library",
     imagePath: "/assets/spaces/garden-library/gardenlibspace.png",
