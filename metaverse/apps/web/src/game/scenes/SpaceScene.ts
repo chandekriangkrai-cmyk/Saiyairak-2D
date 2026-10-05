@@ -21,6 +21,10 @@ const DEPTH_UI = 1000;
 const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
 const TABLET_TILE: TileCoord = { x: 19, y: 9 };
 
+// Classroom is intentionally a self-contained play space. Keep the player
+// inside the room while leaving the furniture collision from the imported map.
+const CLASSROOM_BOUNDS = { left: 11, right: 24, top: 9, bottom: 19 } as const;
+
 type InteractionTarget = TileCoord & {
   type: "tablet";
   label: string;
@@ -78,6 +82,7 @@ export class SpaceScene extends Phaser.Scene {
 
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
+      this.constrainClassroomToRoom();
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
@@ -179,6 +184,19 @@ export class SpaceScene extends Phaser.Scene {
     } else {
       keyboard.resetKeys();
       keyboard.removeCapture(MOVEMENT_KEYS);
+    }
+  }
+
+  private constrainClassroomToRoom(): void {
+    for (let y = 0; y < this.grid.rows; y++) {
+      for (let x = 0; x < this.grid.cols; x++) {
+        const inside =
+          x >= CLASSROOM_BOUNDS.left &&
+          x <= CLASSROOM_BOUNDS.right &&
+          y >= CLASSROOM_BOUNDS.top &&
+          y <= CLASSROOM_BOUNDS.bottom;
+        if (!inside) this.grid.setBlocked(x, y, true);
+      }
     }
   }
 
