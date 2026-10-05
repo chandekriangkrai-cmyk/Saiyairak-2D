@@ -91,6 +91,14 @@ export const SPACES: Record<string, SpaceConfig> = {
       lecternRadius: 1,
     },
   },
+  cafe: {
+    id: "cafe",
+    imagePath: "/assets/spaces/cafe/space.svg",
+    collisionPath: "/assets/spaces/cafe/collision.json",
+    tileSize: 40,
+    spawnTile: { x: 14, y: 17 },
+    zones: [],
+  },
   classroom: {
     id: "classroom",
     imagePath: "/assets/spaces/classroom/original-classroom.png",

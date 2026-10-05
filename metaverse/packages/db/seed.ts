@@ -16,16 +16,19 @@ const MULTIROOM_HOUSE_IMAGE = "/assets/spaces/multiroom-house/space.png";
 const multiroomHouseMap = { name: "Multi-room House", width: 26, height: 26, thumbnail: MULTIROOM_HOUSE_IMAGE, mapImage: MULTIROOM_HOUSE_IMAGE };
 const VIRTUAL_OFFICE_IMAGE = "/assets/spaces/virtual-office/space.png";
 const virtualOfficeMap = { name: "Virtual Office", width: 39, height: 26, thumbnail: VIRTUAL_OFFICE_IMAGE, mapImage: VIRTUAL_OFFICE_IMAGE };
+const CAFE_IMAGE = "/assets/spaces/cafe/space.svg";
+const cafeMap = { name: "Cafe", width: 28, height: 20, thumbnail: CAFE_IMAGE, mapImage: CAFE_IMAGE };
 const CLASSROOM_IMAGE = "/assets/spaces/classroom/original-classroom.png";
 const classroomMap = { name: "Classroom", width: 37, height: 28, thumbnail: CLASSROOM_IMAGE, mapImage: CLASSROOM_IMAGE };
 const HIDE_AND_SEEK_IMAGE = "/assets/spaces/hide-and-seek/space.webp";
 const hideAndSeekMap = { name: "Enchanted Forest Hide & Seek", width: 57, height: 57, thumbnail: HIDE_AND_SEEK_IMAGE, mapImage: HIDE_AND_SEEK_IMAGE };
-const templateMaps = [libraryMap, multiroomHouseMap, virtualOfficeMap, classroomMap, hideAndSeekMap];
+const templateMaps = [libraryMap, multiroomHouseMap, virtualOfficeMap, classroomMap, cafeMap, hideAndSeekMap];
 const officialSpaces = [
   { code: "LIBRARY", map: libraryMap },
   { code: "HOUSE01", map: multiroomHouseMap },
   { code: "OFFICE1", map: virtualOfficeMap },
   { code: "CLASS01", map: classroomMap },
+  { code: "CAFE01", map: cafeMap },
   { code: "FOREST1", map: hideAndSeekMap },
 ];
 
