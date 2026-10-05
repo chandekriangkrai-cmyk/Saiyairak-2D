@@ -12,7 +12,6 @@ const DELTAS: Record<Direction, TileCoord> = {
 };
 
 const DEFAULT_SPEED_TILES_PER_SECOND = 4.25;
-const MIN_COLLISION_RADIUS = 9;
 
 export type GridMovementHooks = {
   onWalk?: (dir: Direction) => void;
@@ -120,17 +119,14 @@ export class GridMovement {
   }
 
   private canOccupy(worldX: number, worldY: number): boolean {
-    const radius = Math.max(MIN_COLLISION_RADIUS, Math.min(this.tileSize * 0.2, 12));
-    const samples = [
-      [worldX - radius, worldY - radius],
-      [worldX + radius, worldY - radius],
-      [worldX - radius, worldY + radius],
-      [worldX + radius, worldY + radius],
-    ];
-    return samples.every(([x, y]) => {
-      const tile = this.worldToTile(x, y);
-      return !this.grid.isBlocked(tile.x, tile.y);
-    });
+    // The player anchor sits on the lower edge of its tile. Sampling four
+    // corners around that anchor incorrectly touches the neighbouring row and
+    // can trap the player whenever a desk/wall is directly above or below.
+    // Movement is tile-based, so the destination tile itself is the authoritative
+    // collision boundary; this still prevents walking through blocked furniture
+    // while allowing the player to use the aisles around it.
+    const tile = this.worldToTile(worldX, worldY);
+    return !this.grid.isBlocked(tile.x, tile.y);
   }
 
   private worldToTile(worldX: number, worldY: number): TileCoord {

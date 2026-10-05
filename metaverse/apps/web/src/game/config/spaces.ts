@@ -96,7 +96,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     imagePath: "/assets/spaces/classroom/original-classroom.png",
     collisionPath: "/assets/spaces/classroom/original-collision.json",
     tileSize: 40,
-    spawnTile: { x: 19, y: 13 },
+    spawnTile: { x: 20, y: 14 },
     zones: [],
   },
   "hide-and-seek": {
