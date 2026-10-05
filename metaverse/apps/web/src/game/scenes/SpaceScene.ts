@@ -5,7 +5,6 @@ import { CollisionGrid, type CollisionRows } from "../systems/CollisionGrid";
 import { GridMovement, type Direction } from "../systems/GridMovement";
 import { CameraController } from "../systems/CameraController";
 import type { CollisionEditor } from "../systems/CollisionEditor";
-import { applyClassroomFurnitureOrientation } from "../systems/ClassroomFurnitureOrientation";
 import { Player } from "../entities/Player";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import {
@@ -79,7 +78,6 @@ export class SpaceScene extends Phaser.Scene {
 
     if (this.spaceConfig.id === "classroom") {
       this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
-      applyClassroomFurnitureOrientation(this, SPACE_TEXTURE, tileSize);
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
