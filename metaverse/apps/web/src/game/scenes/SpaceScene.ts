@@ -16,7 +16,6 @@ import {
 const DEPTH_SPACE = 0;
 const DEPTH_PLAYER = 10;
 const DEPTH_FOREGROUND = 20;
-const DEPTH_UI = 1000;
 
 const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
 const TABLET_TILE: TileCoord = { x: 19, y: 9 };
