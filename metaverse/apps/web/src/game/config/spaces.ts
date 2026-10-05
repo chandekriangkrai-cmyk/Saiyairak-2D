@@ -93,8 +93,8 @@ export const SPACES: Record<string, SpaceConfig> = {
   },
   classroom: {
     id: "classroom",
-    imagePath: "/assets/spaces/classroom/classroom.png",
-    collisionPath: "/assets/spaces/classroom/collision.json",
+    imagePath: "/assets/spaces/classroom/original-classroom.png",
+    collisionPath: "/assets/spaces/classroom/original-collision.json",
     tileSize: 40,
     spawnTile: { x: 19, y: 13 },
     zones: [],
