@@ -177,9 +177,6 @@ export function MobileJoystick() {
 
   return (
     <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+4.25rem)] left-3 z-[6] hidden flex-col items-center gap-1 [@media(pointer:coarse)]:flex">
-      <span className="rounded bg-midnight/80 px-1.5 py-0.5 font-pixel text-[0.48rem] uppercase tracking-wider text-fog backdrop-blur-sm">
-        เดิน
-      </span>
       <button
         type="button"
         className="relative grid h-[6.5rem] w-[6.5rem] touch-none select-none place-items-center rounded-full border border-line-strong bg-[#111326d9] shadow-[0_10px_30px_#05061188,inset_0_0_0_1px_#ffffff08] outline-none backdrop-blur-md focus-visible:ring-2 focus-visible:ring-portal focus-visible:ring-offset-2 focus-visible:ring-offset-midnight"
