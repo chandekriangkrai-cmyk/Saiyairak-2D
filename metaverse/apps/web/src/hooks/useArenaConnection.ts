@@ -228,6 +228,7 @@ export function useArenaConnection({
             text: payload.text,
             at: payload.at,
           });
+          withScene((scene) => scene.showChatBubble(payload.userId, payload.text));
         },
         "whiteboard-update": (payload) => setWhiteboardScene(payload),
         "hide-seek-state": (payload) => {
