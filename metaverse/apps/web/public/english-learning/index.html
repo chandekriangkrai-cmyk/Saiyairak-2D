@@ -317,8 +317,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .bingo-btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
 .bingo-btn.reset{color:var(--bingo-green-dark);border-color:var(--bingo-green);background:#ECFDF3}
 .bingo-btn.home{color:var(--quiz-dark);border-color:var(--quiz);background:var(--quiz-soft)}
-.bingo-btn.bot-toggle{color:#6D28D9;border-color:#8B5CF6;background:#F5F3FF;width:100%;max-width:420px;margin:0 auto;display:block}
-.bingo-btn.bot-toggle.active{color:#fff;background:#7C3AED;border-color:#5B21B6}
+.bingo-bot-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:520px;margin:10px auto 0}
+.bingo-btn.bot-choice{color:#6D28D9;border-color:#8B5CF6;background:#F5F3FF;width:100%;margin:0;min-height:52px}
+.bingo-btn.bot-choice.active{color:#fff;background:#7C3AED;border-color:#5B21B6;box-shadow:0 4px 0 #5B21B6}
 .bingo-bot-status{text-align:center;margin:10px auto 2px;color:var(--muted);font-weight:800;font-size:.9em}
 .bingo-modal{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto}
 .bingo-modal.hidden{display:none!important}
@@ -566,8 +567,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <div><label for="bingoPlayer1Name">🟢 ชื่อผู้เล่น 1</label><input id="bingoPlayer1Name" class="bingo-player-input" maxlength="24" placeholder="ใส่ชื่อผู้เล่น 1" autocomplete="off"></div>
                 <div><label for="bingoPlayer2Name">🔴 ชื่อผู้เล่น 2</label><input id="bingoPlayer2Name" class="bingo-player-input" maxlength="24" placeholder="ใส่ชื่อผู้เล่น 2" autocomplete="off"></div>
             </div>
-            <button id="bingoBotToggleBtn" type="button" class="bingo-btn bot-toggle">🤖 เล่นกับ Easy Bot</button>
-            <div id="bingoBotStatus" class="bingo-bot-status">ผู้เล่น 2: คน • สลับเป็น Easy Bot ได้ตลอดก่อนเริ่มตา</div>
+            <div class="bingo-bot-picker" role="group" aria-label="เลือกระดับ Bot">
+                <button id="bingoEasyBotBtn" type="button" class="bingo-btn bot-choice active">🤖 Easy Bot</button>
+                <button id="bingoMediumBotBtn" type="button" class="bingo-btn bot-choice">🧠 Medium Bot</button>
+            </div>
+            <div id="bingoBotStatus" class="bingo-bot-status">เลือกคู่แข่ง: 🤖 Easy Bot • ระดับง่าย</div>
             <div id="bingoRank" class="bingo-rank"><h3>🏅 Rank Bingo</h3><div class="bingo-rank-empty">ยังไม่มีคะแนน</div></div>
         </div>
     </section>
@@ -1893,7 +1897,7 @@ window.addEventListener('DOMContentLoaded', init);
    ระบบหลักของแอปไม่ถูกแก้ไข
 ============================================================ */
 (function(){
-  const bingo={board:[],selectedIndex:null,answer:[],answerWord:'',currentTurn:1,scores:{1:0,2:0},gameOver:false,mode:'two',stage:1,unitId:null,usedKeys:new Set(),transitioning:false,letterButtons:[],botEnabled:false,botTimer:null};
+  const bingo={board:[],selectedIndex:null,answer:[],answerWord:'',currentTurn:1,scores:{1:0,2:0},gameOver:false,mode:'two',stage:1,unitId:null,usedKeys:new Set(),transitioning:false,letterButtons:[],botEnabled:false,botDifficulty:'easy',botTimer:null};
   const BINGO_RANK_KEY='tpapsi_bingo_rank_v1';
   function bingoEscape(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
   function bingoGetNames(){return {1:(($('bingoPlayer1Name')?.value||'').trim().slice(0,24)||'ผู้เล่น 1'),2:(($('bingoPlayer2Name')?.value||'').trim().slice(0,24)||'ผู้เล่น 2')}}
@@ -1982,43 +1986,57 @@ window.addEventListener('DOMContentLoaded', init);
   function bingoLoadStage(stage,isFirst=false){if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}const list=(bingo.stages?.[stage-1]||[]).filter(Boolean);bingo.board=list.map((v,i)=>({...v,_id:i}));bingo.usedKeys=new Set([...(bingo.usedKeys||[]),...list.map(v=>v._key)]);bingo.currentTurn=1;bingo.selectedIndex=null;bingo.gameOver=false;bingo.transitioning=false;bingoRenderBoard();bingoUpdateUI();$('bingoWinner')?.classList.add('hidden');const unit=getCurrentUnits().find(u=>u.id===bingo.unitId);const cat=(window.__CATEGORY_MAP?.[currentGrade]||[])[bingo.categoryIndex];if(!isFirst){if(cat)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${cat[0]} ${cat[1]}`);else if(unit)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${unit.title}`);}bingoMaybeBotTurn();}
   function bingoReset(){if(state.mode!=='bingo'||bingo.unitId==null)return;if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}if(typeof bingo.categoryIndex==='number'){bingoStartCategory(bingo.categoryIndex);}else{bingoStart(bingo.unitId);}}
   function bingoUpdateBotUI(){
-    const btn=$('bingoBotToggleBtn'),status=$('bingoBotStatus'),input=$('bingoPlayer2Name');
-    if(btn){btn.classList.toggle('active',bingo.botEnabled);btn.textContent=bingo.botEnabled?'🤖 Easy Bot: เปิดอยู่':'🤖 เล่นกับ Easy Bot';}
-    if(status)status.textContent=bingo.botEnabled?'ผู้เล่น 2: 🤖 Easy Bot • ระดับง่าย • จะเลือกช่องและตอบให้อัตโนมัติ':'ผู้เล่น 2: คน • สลับเป็น Easy Bot ได้ตลอดก่อนเริ่มตา';
-    if(input){input.disabled=bingo.botEnabled;if(bingo.botEnabled)input.value='Easy Bot';input.placeholder=bingo.botEnabled?'Easy Bot':'ใส่ชื่อผู้เล่น 2';}
+    const easy=$('bingoEasyBotBtn'),medium=$('bingoMediumBotBtn'),status=$('bingoBotStatus'),input=$('bingoPlayer2Name');
+    if(easy)easy.classList.toggle('active',bingo.botDifficulty==='easy');
+    if(medium)medium.classList.toggle('active',bingo.botDifficulty==='medium');
+    const label=bingo.botDifficulty==='medium'?'🧠 Medium Bot':'🤖 Easy Bot';
+    const level=bingo.botDifficulty==='medium'?'ระดับกลาง • เลือกช่องฉลาดขึ้นและตอบถูกบ่อยขึ้น':'ระดับง่าย • เลือกช่องแบบสุ่มและมีโอกาสพลาด';
+    if(status)status.textContent=`คู่แข่ง: ${label} • ${level}`;
+    if(input){input.disabled=bingo.botEnabled;if(bingo.botEnabled)input.value=label.replace(/^.. /,'');input.placeholder=bingo.botEnabled?label:'ใส่ชื่อผู้เล่น 2';}
     bingoUpdateUI();
   }
-  function bingoToggleBot(){
+  function bingoSelectBot(difficulty){
     if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}
-    bingo.botEnabled=!bingo.botEnabled;
+    bingo.botDifficulty=difficulty==='medium'?'medium':'easy';
+    bingo.botEnabled=true;
     bingoUpdateBotUI();
     bingoMaybeBotTurn();
   }
   function bingoMaybeBotTurn(){
     if(!bingo.botEnabled||bingo.currentTurn!==2||bingo.gameOver||bingo.transitioning)return;
     if(bingo.botTimer)clearTimeout(bingo.botTimer);
-    const turn=$('bingoTurn');if(turn)turn.textContent='🤖 Easy Bot กำลังคิด…';
+    const isMedium=bingo.botDifficulty==='medium';
+    const botName=isMedium?'🧠 Medium Bot':'🤖 Easy Bot';
+    const turn=$('bingoTurn');if(turn)turn.textContent=`${botName} กำลังคิด…`;
     bingo.botTimer=setTimeout(()=>{
       bingo.botTimer=null;
       if(!bingo.botEnabled||bingo.currentTurn!==2||bingo.gameOver||bingo.transitioning)return;
       const cells=[...document.querySelectorAll('#bingoBoard .bingo-cell')];
       const available=cells.map((c,i)=>({c,i})).filter(x=>!x.c.classList.contains('claimed')&&!x.c.classList.contains('wrong')&&!x.c.disabled);
       if(!available.length){bingo.currentTurn=1;bingoUpdateUI();return;}
-      const pick=available[Math.floor(Math.random()*available.length)];
-      const easyCorrect=Math.random()<0.72;
+      let pick;
+      if(isMedium){
+        const preferred=[4,0,2,6,8,1,3,5,7].map(i=>available.find(x=>x.i===i)).filter(Boolean);
+        pick=preferred[0]||available[0];
+      }else{
+        pick=available[Math.floor(Math.random()*available.length)];
+      }
+      const correctChance=isMedium?0.88:0.72;
+      const botCorrect=Math.random()<correctChance;
       bingo.selectedIndex=pick.i;
       pick.c.classList.add('disabled');
       setTimeout(()=>{
         if(bingo.gameOver||bingo.currentTurn!==2||!bingo.botEnabled)return;
-        if(easyCorrect){
+        if(botCorrect){
           pick.c.classList.remove('disabled');pick.c.classList.add('claimed','team2');pick.c.dataset.mark='★';pick.c.disabled=true;bingo.scores[2]++;bingoSound('ok');bingoUpdateUI();
           if(bingoCheckWin(2)){bingoFinishStage(2);return;}
         }else{
           pick.c.classList.remove('disabled');pick.c.classList.add('wrong','disabled');bingoSound('bad');
         }
         bingo.selectedIndex=null;bingo.currentTurn=1;bingoUpdateUI();
-      },700);
-    },650);
+        bingoMaybeBotTurn();
+      },isMedium?850:700);
+    },isMedium?850:650);
   }
   // Visuals สำหรับ Bingo: ใช้สัญลักษณ์ที่สื่อความหมายจริง โดยเฉพาะวันในสัปดาห์
   // ไม่แก้ข้อมูลคำศัพท์หลัก/Flashcard — เปลี่ยนเฉพาะหน้าตาในเกม Bingo
@@ -2081,7 +2099,8 @@ window.addEventListener('DOMContentLoaded', init);
     }
     $('bingoResetBtn')?.addEventListener('click',bingoReset);
     $('bingoHomeBtn')?.addEventListener('click',bingoHome);
-    $('bingoBotToggleBtn')?.addEventListener('click',bingoToggleBot);
+    $('bingoEasyBotBtn')?.addEventListener('click',()=>bingoSelectBot('easy'));
+    $('bingoMediumBotBtn')?.addEventListener('click',()=>bingoSelectBot('medium'));
     $('bingoPlayer1Name')?.addEventListener('input',bingoUpdateUI);
     $('bingoPlayer2Name')?.addEventListener('input',bingoUpdateUI);
     bingoRenderRank();
