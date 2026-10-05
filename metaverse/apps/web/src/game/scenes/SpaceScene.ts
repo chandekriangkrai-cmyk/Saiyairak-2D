@@ -46,7 +46,6 @@ export class SpaceScene extends Phaser.Scene {
   private movementEnabled = true;
 
   private interactionTarget: InteractionTarget | null = null;
-  private interactionHint!: Phaser.GameObjects.Text;
   private tabletObject!: Phaser.GameObjects.Container;
 
   private readonly saveKey = "school-time-save-v1";
@@ -120,8 +119,6 @@ export class SpaceScene extends Phaser.Scene {
       image.height,
       tileSize,
     );
-
-    this.createInteractionHint();
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as SpaceScene["wasd"];
@@ -249,21 +246,6 @@ export class SpaceScene extends Phaser.Scene {
       .setDepth(DEPTH_PLAYER + 2);
   }
 
-  private createInteractionHint(): void {
-    this.interactionHint = this.add
-      .text(this.scale.width / 2, this.scale.height - 36, "", {
-        fontFamily: "sans-serif",
-        fontSize: "14px",
-        color: "#201800",
-        backgroundColor: "#ffc53d",
-        padding: { x: 12, y: 7 },
-      })
-      .setOrigin(0.5, 1)
-      .setScrollFactor(0)
-      .setDepth(DEPTH_UI)
-      .setVisible(false);
-  }
-
   private onPlayerName(name: string): void {
     this.player.setDisplayName(name);
   }
@@ -327,14 +309,9 @@ export class SpaceScene extends Phaser.Scene {
 
   private setCurrentInteractionTarget(target: InteractionTarget | null): void {
     this.interactionTarget = target;
-    if (!this.interactionHint) return;
-    if (!target) {
-      this.interactionHint.setVisible(false);
-      return;
-    }
-    this.interactionHint
-      .setText("กด Enter / Space หรือปุ่มโต้ตอบ เพื่อเปิดแท็บเล็ตภาษาอังกฤษ")
-      .setVisible(true);
+    // Interaction is now communicated by the mobile A button / keyboard controls.
+    // Do not render a bottom-screen hint because it overlaps the mobile action buttons.
+    void target;
   }
 
   private pauseMovement(): void {
