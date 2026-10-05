@@ -86,6 +86,20 @@ export class MultiplayerSpaceScene extends SpaceScene {
     this.player.setTimer(text);
   }
 
+  showChatBubble(userId: string, text: string, duration = 4500): void {
+    if (userId === this.localUserId) {
+      this.player.showChatBubble(text, duration);
+      return;
+    }
+
+    for (const remote of this.remotes.values()) {
+      if (remote.userId === userId) {
+        remote.player.showChatBubble(text, duration);
+        return;
+      }
+    }
+  }
+
   setUserMeta(
     userId: string,
     username: string | null,
