@@ -131,7 +131,7 @@ export default function Arena() {
     };
   }, [learningAppOpen]);
 
-  const learningAppUrl = `${import.meta.env.BASE_URL}english-learning/index.html`;
+  const learningAppUrl = "/english-learning/index.html";
 
   const copyCode = useCallback(async () => {
     if (!conn.spaceCode) return;

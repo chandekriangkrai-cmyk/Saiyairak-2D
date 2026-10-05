@@ -19,7 +19,7 @@ const DEPTH_FOREGROUND = 20;
 const DEPTH_UI = 1000;
 
 const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
-const TABLET_TILE: TileCoord = { x: 10, y: 3 };
+const TABLET_TILE: TileCoord = { x: 19, y: 9 };
 
 type InteractionTarget = TileCoord & {
   type: "tablet";
@@ -200,6 +200,19 @@ export class SpaceScene extends Phaser.Scene {
 
     this.tabletObject.setData("tile", TABLET_TILE);
     this.tabletObject.setData("label", "แท็บเล็ตภาษาอังกฤษ");
+    this.tabletObject.setInteractive(
+      new Phaser.Geom.Rectangle(-18, -15, 36, 34),
+      Phaser.Geom.Rectangle.Contains,
+    );
+    this.tabletObject.on("pointerdown", () => {
+      if (!this.isNearTablet()) return;
+      this.setCurrentInteractionTarget({
+        ...TABLET_TILE,
+        type: "tablet",
+        label: "แท็บเล็ตภาษาอังกฤษ",
+      });
+      this.tryInteract();
+    });
 
     this.add
       .text(
@@ -287,6 +300,11 @@ export class SpaceScene extends Phaser.Scene {
     }
 
     this.setCurrentInteractionTarget(null);
+  }
+
+  private isNearTablet(): boolean {
+    const tile = this.movement.tile;
+    return Math.abs(tile.x - TABLET_TILE.x) + Math.abs(tile.y - TABLET_TILE.y) <= 1;
   }
 
   private setCurrentInteractionTarget(target: InteractionTarget | null): void {
