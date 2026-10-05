@@ -317,6 +317,9 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .bingo-btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--line)}
 .bingo-btn.reset{color:var(--bingo-green-dark);border-color:var(--bingo-green);background:#ECFDF3}
 .bingo-btn.home{color:var(--quiz-dark);border-color:var(--quiz);background:var(--quiz-soft)}
+.bingo-btn.bot-toggle{color:#6D28D9;border-color:#8B5CF6;background:#F5F3FF;width:100%;max-width:420px;margin:0 auto;display:block}
+.bingo-btn.bot-toggle.active{color:#fff;background:#7C3AED;border-color:#5B21B6}
+.bingo-bot-status{text-align:center;margin:10px auto 2px;color:var(--muted);font-weight:800;font-size:.9em}
 .bingo-modal{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto}
 .bingo-modal.hidden{display:none!important}
 .bingo-modal-card{width:min(680px,100%);max-height:94vh;overflow:auto;background:var(--paper);border:3px solid var(--line);border-radius:30px;padding:26px 18px 22px;box-shadow:0 12px 0 rgba(15,23,42,.18);text-align:center;position:relative}
@@ -563,6 +566,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
                 <div><label for="bingoPlayer1Name">🟢 ชื่อผู้เล่น 1</label><input id="bingoPlayer1Name" class="bingo-player-input" maxlength="24" placeholder="ใส่ชื่อผู้เล่น 1" autocomplete="off"></div>
                 <div><label for="bingoPlayer2Name">🔴 ชื่อผู้เล่น 2</label><input id="bingoPlayer2Name" class="bingo-player-input" maxlength="24" placeholder="ใส่ชื่อผู้เล่น 2" autocomplete="off"></div>
             </div>
+            <button id="bingoBotToggleBtn" type="button" class="bingo-btn bot-toggle">🤖 เล่นกับ Easy Bot</button>
+            <div id="bingoBotStatus" class="bingo-bot-status">ผู้เล่น 2: คน • สลับเป็น Easy Bot ได้ตลอดก่อนเริ่มตา</div>
             <div id="bingoRank" class="bingo-rank"><h3>🏅 Rank Bingo</h3><div class="bingo-rank-empty">ยังไม่มีคะแนน</div></div>
         </div>
     </section>
@@ -1888,12 +1893,12 @@ window.addEventListener('DOMContentLoaded', init);
    ระบบหลักของแอปไม่ถูกแก้ไข
 ============================================================ */
 (function(){
-  const bingo={board:[],selectedIndex:null,answer:[],answerWord:'',currentTurn:1,scores:{1:0,2:0},gameOver:false,mode:'two',stage:1,unitId:null,usedKeys:new Set(),transitioning:false,letterButtons:[]};
+  const bingo={board:[],selectedIndex:null,answer:[],answerWord:'',currentTurn:1,scores:{1:0,2:0},gameOver:false,mode:'two',stage:1,unitId:null,usedKeys:new Set(),transitioning:false,letterButtons:[],botEnabled:false,botTimer:null};
   const BINGO_RANK_KEY='tpapsi_bingo_rank_v1';
   function bingoEscape(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
   function bingoGetNames(){return {1:(($('bingoPlayer1Name')?.value||'').trim().slice(0,24)||'ผู้เล่น 1'),2:(($('bingoPlayer2Name')?.value||'').trim().slice(0,24)||'ผู้เล่น 2')}}
   function bingoRenderRank(){const box=$('bingoRank');if(!box)return;let rows=[];try{rows=JSON.parse(localStorage.getItem(BINGO_RANK_KEY)||'[]').filter(x=>x&&x.name&&Number.isFinite(x.score));}catch(e){}rows.sort((a,b)=>b.score-a.score);rows=rows.slice(0,10);box.innerHTML='<h3>🏅 Rank Bingo</h3>'+(rows.length?rows.map((r,i)=>`<div class="bingo-rank-row"><span>${i+1}</span><span>${bingoEscape(r.name)} • ป.${r.grade}</span><strong>${r.score} คะแนน</strong></div>`).join(''):'<div class="bingo-rank-empty">ยังไม่มีคะแนน</div>');}
-  function bingoSaveRank(){try{const names=bingoGetNames(),rows=JSON.parse(localStorage.getItem(BINGO_RANK_KEY)||'[]');[1,2].forEach(t=>rows.push({name:names[t],score:bingo.scores[t],grade:currentGrade,date:new Date().toISOString()}));rows.sort((a,b)=>b.score-a.score);localStorage.setItem(BINGO_RANK_KEY,JSON.stringify(rows.slice(0,50)));bingoRenderRank();}catch(e){}}
+  function bingoSaveRank(){try{const names=bingoGetNames(),rows=JSON.parse(localStorage.getItem(BINGO_RANK_KEY)||'[]');rows.push({name:names[1],score:bingo.scores[1],grade:currentGrade,date:new Date().toISOString()});if(!bingo.botEnabled)rows.push({name:names[2],score:bingo.scores[2],grade:currentGrade,date:new Date().toISOString()});rows.sort((a,b)=>b.score-a.score);localStorage.setItem(BINGO_RANK_KEY,JSON.stringify(rows.slice(0,50)));bingoRenderRank();}catch(e){}}
 
   const $=id=>document.getElementById(id);
   function bingoNormalize(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');}
@@ -1974,8 +1979,47 @@ window.addEventListener('DOMContentLoaded', init);
   }
   function bingoStart(unitId){bingo.categoryIndex=null;bingo.unitId=unitId;bingo.stage=1;bingo.scores={1:0,2:0};bingo.currentTurn=1;bingo.gameOver=false;bingo.selectedIndex=null;bingo.transitioning=false;bingo.usedKeys=new Set();state.mode='bingo';state.unitId=unitId;const unit=getCurrentUnits().find(u=>u.id===unitId);if(unit){navigateTo('bingo',`ป.${currentGrade} - Bingo`,`Bingo 2 Players • ${unit.title}`);}else if(unitId==='ALL_VOCAB'){navigateTo('bingo',`ป.${currentGrade} - Bingo`,'คำศัพท์ทั้งหมด 300 คำ • Bingo 2 Players');}else{return;}bingoBeginStage(1,true);}
   function bingoBeginStage(stage,isFirst=false){bingo.stage=stage;bingo.gameOver=false;bingo.transitioning=false;bingo.selectedIndex=null;bingo.stages=bingoBuildStages();bingoLoadStage(stage,isFirst);}
-  function bingoLoadStage(stage,isFirst=false){const list=(bingo.stages?.[stage-1]||[]).filter(Boolean);bingo.board=list.map((v,i)=>({...v,_id:i}));bingo.usedKeys=new Set([...(bingo.usedKeys||[]),...list.map(v=>v._key)]);bingo.currentTurn=1;bingo.selectedIndex=null;bingo.gameOver=false;bingo.transitioning=false;bingoRenderBoard();bingoUpdateUI();$('bingoWinner')?.classList.add('hidden');const unit=getCurrentUnits().find(u=>u.id===bingo.unitId);const cat=(window.__CATEGORY_MAP?.[currentGrade]||[])[bingo.categoryIndex];if(!isFirst){if(cat)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${cat[0]} ${cat[1]}`);else if(unit)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${unit.title}`);}}
-  function bingoReset(){if(state.mode!=='bingo'||bingo.unitId==null)return;if(typeof bingo.categoryIndex==='number'){bingoStartCategory(bingo.categoryIndex);}else{bingoStart(bingo.unitId);}}
+  function bingoLoadStage(stage,isFirst=false){if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}const list=(bingo.stages?.[stage-1]||[]).filter(Boolean);bingo.board=list.map((v,i)=>({...v,_id:i}));bingo.usedKeys=new Set([...(bingo.usedKeys||[]),...list.map(v=>v._key)]);bingo.currentTurn=1;bingo.selectedIndex=null;bingo.gameOver=false;bingo.transitioning=false;bingoRenderBoard();bingoUpdateUI();$('bingoWinner')?.classList.add('hidden');const unit=getCurrentUnits().find(u=>u.id===bingo.unitId);const cat=(window.__CATEGORY_MAP?.[currentGrade]||[])[bingo.categoryIndex];if(!isFirst){if(cat)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${cat[0]} ${cat[1]}`);else if(unit)navigateTo('bingo',`ป.${currentGrade} - Bingo`,`ด่าน ${stage} / 3 • ${unit.title}`);}bingoMaybeBotTurn();}
+  function bingoReset(){if(state.mode!=='bingo'||bingo.unitId==null)return;if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}if(typeof bingo.categoryIndex==='number'){bingoStartCategory(bingo.categoryIndex);}else{bingoStart(bingo.unitId);}}
+  function bingoUpdateBotUI(){
+    const btn=$('bingoBotToggleBtn'),status=$('bingoBotStatus'),input=$('bingoPlayer2Name');
+    if(btn){btn.classList.toggle('active',bingo.botEnabled);btn.textContent=bingo.botEnabled?'🤖 Easy Bot: เปิดอยู่':'🤖 เล่นกับ Easy Bot';}
+    if(status)status.textContent=bingo.botEnabled?'ผู้เล่น 2: 🤖 Easy Bot • ระดับง่าย • จะเลือกช่องและตอบให้อัตโนมัติ':'ผู้เล่น 2: คน • สลับเป็น Easy Bot ได้ตลอดก่อนเริ่มตา';
+    if(input){input.disabled=bingo.botEnabled;if(bingo.botEnabled)input.value='Easy Bot';input.placeholder=bingo.botEnabled?'Easy Bot':'ใส่ชื่อผู้เล่น 2';}
+    bingoUpdateUI();
+  }
+  function bingoToggleBot(){
+    if(bingo.botTimer){clearTimeout(bingo.botTimer);bingo.botTimer=null;}
+    bingo.botEnabled=!bingo.botEnabled;
+    bingoUpdateBotUI();
+    bingoMaybeBotTurn();
+  }
+  function bingoMaybeBotTurn(){
+    if(!bingo.botEnabled||bingo.currentTurn!==2||bingo.gameOver||bingo.transitioning)return;
+    if(bingo.botTimer)clearTimeout(bingo.botTimer);
+    const turn=$('bingoTurn');if(turn)turn.textContent='🤖 Easy Bot กำลังคิด…';
+    bingo.botTimer=setTimeout(()=>{
+      bingo.botTimer=null;
+      if(!bingo.botEnabled||bingo.currentTurn!==2||bingo.gameOver||bingo.transitioning)return;
+      const cells=[...document.querySelectorAll('#bingoBoard .bingo-cell')];
+      const available=cells.map((c,i)=>({c,i})).filter(x=>!x.c.classList.contains('claimed')&&!x.c.classList.contains('wrong')&&!x.c.disabled);
+      if(!available.length){bingo.currentTurn=1;bingoUpdateUI();return;}
+      const pick=available[Math.floor(Math.random()*available.length)];
+      const easyCorrect=Math.random()<0.72;
+      bingo.selectedIndex=pick.i;
+      pick.c.classList.add('disabled');
+      setTimeout(()=>{
+        if(bingo.gameOver||bingo.currentTurn!==2||!bingo.botEnabled)return;
+        if(easyCorrect){
+          pick.c.classList.remove('disabled');pick.c.classList.add('claimed','team2');pick.c.dataset.mark='★';pick.c.disabled=true;bingo.scores[2]++;bingoSound('ok');bingoUpdateUI();
+          if(bingoCheckWin(2)){bingoFinishStage(2);return;}
+        }else{
+          pick.c.classList.remove('disabled');pick.c.classList.add('wrong','disabled');bingoSound('bad');
+        }
+        bingo.selectedIndex=null;bingo.currentTurn=1;bingoUpdateUI();
+      },700);
+    },650);
+  }
   // Visuals สำหรับ Bingo: ใช้สัญลักษณ์ที่สื่อความหมายจริง โดยเฉพาะวันในสัปดาห์
   // ไม่แก้ข้อมูลคำศัพท์หลัก/Flashcard — เปลี่ยนเฉพาะหน้าตาในเกม Bingo
   function bingoVisual(item){
@@ -2002,8 +2046,8 @@ window.addEventListener('DOMContentLoaded', init);
   function bingoClear(){bingo.answer=[];bingoRenderSlots();document.querySelectorAll('#bingoLetters .bingo-letter').forEach(b=>{b.disabled=false;b.classList.remove('used');});$('bingoFeedback').textContent='';$('bingoFeedback').className='bingo-feedback';if($('bingoCheckBtn'))$('bingoCheckBtn').disabled=false;}
   function bingoClose(){const m=$('bingoModal');if(m){m.classList.add('hidden');m.setAttribute('aria-hidden','true');}bingo.selectedIndex=null;}
   function bingoCheck(){if(bingo.selectedIndex===null||bingo.gameOver)return;const typed=bingo.answer.join('');if(typed.length!==bingo.answerWord.length){$('bingoFeedback').textContent='⚠️ เรียงตัวอักษรให้ครบก่อน แล้วกด “ส่งคำตอบ”';$('bingoFeedback').className='bingo-feedback bad';return;}typed===bingo.answerWord?bingoCorrect():bingoWrong();}
-  function bingoCorrect(){const idx=bingo.selectedIndex,cell=$('bingoBoard')?.children[idx];if(!cell)return;cell.classList.add('claimed',`team${bingo.currentTurn}`);cell.dataset.mark=bingo.currentTurn===1?'✓':'★';cell.disabled=true;bingo.scores[bingo.currentTurn]++;bingoSound('ok');bingoUpdateUI();$('bingoFeedback').textContent='🎉 ถูกต้อง! ได้ช่องนี้แล้ว';$('bingoFeedback').className='bingo-feedback ok';setTimeout(()=>{bingoClose();if(bingoCheckWin(bingo.currentTurn)){bingoFinishStage(bingo.currentTurn);return;}bingo.currentTurn=bingo.currentTurn===1?2:1;bingoUpdateUI();},650);}
-  function bingoWrong(){const idx=bingo.selectedIndex,cell=$('bingoBoard')?.children[idx];if(!cell)return;cell.classList.add('wrong','disabled');bingoSound('bad');$('bingoFeedback').textContent='❌ ยังไม่ถูกต้อง! ช่องนี้ใช้ไม่ได้ ลองช่องอื่น';$('bingoFeedback').className='bingo-feedback bad';setTimeout(()=>{bingoClose();bingo.currentTurn=bingo.currentTurn===1?2:1;bingoUpdateUI();},850);}
+  function bingoCorrect(){const idx=bingo.selectedIndex,cell=$('bingoBoard')?.children[idx];if(!cell)return;cell.classList.add('claimed',`team${bingo.currentTurn}`);cell.dataset.mark=bingo.currentTurn===1?'✓':'★';cell.disabled=true;bingo.scores[bingo.currentTurn]++;bingoSound('ok');bingoUpdateUI();$('bingoFeedback').textContent='🎉 ถูกต้อง! ได้ช่องนี้แล้ว';$('bingoFeedback').className='bingo-feedback ok';setTimeout(()=>{bingoClose();if(bingoCheckWin(bingo.currentTurn)){bingoFinishStage(bingo.currentTurn);return;}bingo.currentTurn=bingo.currentTurn===1?2:1;bingoUpdateUI();bingoMaybeBotTurn();},650);}
+  function bingoWrong(){const idx=bingo.selectedIndex,cell=$('bingoBoard')?.children[idx];if(!cell)return;cell.classList.add('wrong','disabled');bingoSound('bad');$('bingoFeedback').textContent='❌ ยังไม่ถูกต้อง! ช่องนี้ใช้ไม่ได้ ลองช่องอื่น';$('bingoFeedback').className='bingo-feedback bad';setTimeout(()=>{bingoClose();bingo.currentTurn=bingo.currentTurn===1?2:1;bingoUpdateUI();bingoMaybeBotTurn();},850);}
   function bingoCheckWin(team){const cells=[...document.querySelectorAll('#bingoBoard .bingo-cell')],own=cells.map(c=>c.classList.contains(`team${team}`));const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return lines.some(line=>line.every(i=>own[i]));}
   function bingoFinishStage(team){bingo.gameOver=true;bingo.transitioning=true;const winner=team===1?'🏆 🟢 ผู้เล่น 1 ชนะด่านนี้!':'🏆 🔴 ผู้เล่น 2 ชนะด่านนี้!';$('bingoWinner').textContent=`${winner}  ด่าน ${bingo.stage} สำเร็จ`;$('bingoWinner').classList.remove('hidden');document.querySelectorAll('#bingoBoard .bingo-cell').forEach(c=>c.classList.add('disabled'));bingoSpeak(team===1?'Player one wins!':'Player two wins!');bingoUpdateUI();if(bingo.stage<3){setTimeout(()=>bingoLoadStage(bingo.stage+1),1200);}else{setTimeout(()=>{$('bingoWinner').textContent='🏆 สุดยอด! ผ่าน Bingo ครบ 3 ด่านแล้ว!';bingo.transitioning=false;bingo.gameOver=true;bingoUpdateUI();bingoSpeak('Congratulations! You completed all three stages!');bingoSaveRank();},1250);}}
   function bingoUpdateUI(){const claimed=[...document.querySelectorAll('#bingoBoard .bingo-cell')].filter(c=>c.classList.contains('claimed')).length,total=9;if($('bingoStageBadge'))$('bingoStageBadge').textContent=`ด่าน ${bingo.stage} / 3`;if($('bingoStageCount'))$('bingoStageCount').textContent=`${claimed} / ${total}`;if($('bingoStageProgressFill'))$('bingoStageProgressFill').style.width=`${Math.min(100,claimed/total*100)}%`;if($('bingoScore1'))$('bingoScore1').textContent=bingo.scores[1];if($('bingoScore2'))$('bingoScore2').textContent=bingo.scores[2];const t1=$('bingoTeam1'),t2=$('bingoTeam2');if(t1)t1.classList.toggle('active',!bingo.gameOver&&bingo.currentTurn===1);if(t2)t2.classList.toggle('active',!bingo.gameOver&&bingo.currentTurn===2);const names=bingoGetNames();if($('bingoPlayer1Label'))$('bingoPlayer1Label').textContent='🟢 '+names[1];if($('bingoPlayer2Label'))$('bingoPlayer2Label').textContent='🔴 '+names[2];if($('bingoTurn'))$('bingoTurn').textContent=bingo.gameOver?'ด่านจบแล้ว 🏆':`ตาของผู้เล่น ${bingo.currentTurn}`;}
@@ -2037,9 +2081,11 @@ window.addEventListener('DOMContentLoaded', init);
     }
     $('bingoResetBtn')?.addEventListener('click',bingoReset);
     $('bingoHomeBtn')?.addEventListener('click',bingoHome);
+    $('bingoBotToggleBtn')?.addEventListener('click',bingoToggleBot);
     $('bingoPlayer1Name')?.addEventListener('input',bingoUpdateUI);
     $('bingoPlayer2Name')?.addEventListener('input',bingoUpdateUI);
     bingoRenderRank();
+    bingoUpdateBotUI();
     $('bingoCheckBtn')?.addEventListener('click',bingoCheck);
     $('bingoClearBtn')?.addEventListener('click',bingoClear);
     $('bingoReplayBtn')?.addEventListener('click',()=>{if(bingo.selectedIndex!==null&&bingo.board[bingo.selectedIndex])bingoSpeak(bingo.board[bingo.selectedIndex].word);});
