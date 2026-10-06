@@ -23,6 +23,9 @@ const TABLET_TILE: TileCoord = { x: 19, y: 9 };
 // Classroom is intentionally a self-contained play space. Keep the player
 // inside the room while leaving the furniture collision from the imported map.
 const CLASSROOM_BOUNDS = { left: 11, right: 24, top: 9, bottom: 19 } as const;
+// In the classroom, desks and chairs are intentionally walk-through.
+// Only the teacher's desk at the front remains solid.
+const CLASSROOM_TEACHER_DESK = { left: 17, right: 20, top: 9, bottom: 9 } as const;
 
 type InteractionTarget = TileCoord & {
   type: "tablet";
@@ -79,8 +82,7 @@ export class SpaceScene extends Phaser.Scene {
     this.grid = new CollisionGrid(cols, rows, this.collisionSource);
 
     if (this.spaceConfig.id === "classroom") {
-      this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
-      this.constrainClassroomToRoom();
+      this.configureClassroomWalkability();
     }
 
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
@@ -187,7 +189,10 @@ export class SpaceScene extends Phaser.Scene {
     }
   }
 
-  private constrainClassroomToRoom(): void {
+  private configureClassroomWalkability(): void {
+    // Do not inherit the old furniture collision map for this room.
+    // Students can walk through desks/chairs freely; only the room boundary
+    // and the teacher desk at the front are solid.
     for (let y = 0; y < this.grid.rows; y++) {
       for (let x = 0; x < this.grid.cols; x++) {
         const inside =
@@ -195,9 +200,18 @@ export class SpaceScene extends Phaser.Scene {
           x <= CLASSROOM_BOUNDS.right &&
           y >= CLASSROOM_BOUNDS.top &&
           y <= CLASSROOM_BOUNDS.bottom;
-        if (!inside) this.grid.setBlocked(x, y, true);
+        this.grid.setBlocked(x, y, !inside);
       }
     }
+
+    for (let y = CLASSROOM_TEACHER_DESK.top; y <= CLASSROOM_TEACHER_DESK.bottom; y++) {
+      for (let x = CLASSROOM_TEACHER_DESK.left; x <= CLASSROOM_TEACHER_DESK.right; x++) {
+        this.grid.setBlocked(x, y, true);
+      }
+    }
+
+    // The tablet sits on the teacher desk, so it must remain non-walkable too.
+    this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
   }
 
   private createTablet(tileSize: number): void {
