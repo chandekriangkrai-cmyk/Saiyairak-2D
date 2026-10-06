@@ -6,7 +6,7 @@ export default {
     }
     const now = new Date().toISOString();
     const task = {
-      project: 'School Time / TrueMetaverse',
+      project: 'Saiyairak 2D / Saiyairak 2D',
       trigger: 'cloudflare',
       created_at: now,
       instruction: 'Inspect the current development state, choose one highest-priority unresolved bug or improvement, work only on the development branch, run QA, record the result, and never modify production directly.'
@@ -17,7 +17,7 @@ export default {
   },
   async scheduled(event, env) {
     const task = {
-      project: 'School Time / TrueMetaverse',
+      project: 'Saiyairak 2D / Saiyairak 2D',
       trigger: 'cloudflare-cron',
       created_at: new Date().toISOString(),
       instruction: 'Prepare the next bounded development cycle: inspect GitHub/QA state, select one unresolved issue, and queue the work. Do not deploy production.'

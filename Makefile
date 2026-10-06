@@ -88,7 +88,7 @@ docker-config:
 
 docker-up:
 	docker compose up --build -d
-	@echo "truemetaverse: http://localhost:$${WEB_PORT:-5173}"
+	@echo "saiyairak2d: http://localhost:$${WEB_PORT:-5173}"
 
 docker-down:
 	docker compose down

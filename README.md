@@ -1,4 +1,4 @@
-# TrueMetaverse
+# Saiyairak 2D
 
 > A self-hosted, realtime 2D world for studying, meeting, presenting, playing, and simply being together online.
 
@@ -8,7 +8,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?style=flat-square&logo=typescript&logoColor=white)](#technology-stack)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-ready-2496ed?style=flat-square&logo=docker&logoColor=white)](#docker-setup)
 
-TrueMetaverse combines the immediacy of a multiplayer game with the practical tools of a virtual workspace. Users create or join shared pixel-art spaces, move through collision-aware maps, chat in realtime, customize their characters, study with persistent timers and leaderboards, share a synchronized whiteboard, and use LiveKit-powered audio, video, screen sharing, and TURN fallback. The application is a TypeScript monorepo with an authoritative WebSocket game server, an Express control plane, PostgreSQL persistence, and a fully self-hosted Docker deployment.
+Saiyairak 2D combines the immediacy of a multiplayer game with the practical tools of a virtual workspace. Users create or join shared pixel-art spaces, move through collision-aware maps, chat in realtime, customize their characters, study with persistent timers and leaderboards, share a synchronized whiteboard, and use LiveKit-powered audio, video, screen sharing, and TURN fallback. The application is a TypeScript monorepo with an authoritative WebSocket game server, an Express control plane, PostgreSQL persistence, and a fully self-hosted Docker deployment.
 
 ## Table of contents
 
@@ -56,10 +56,10 @@ https://github.com/user-attachments/assets/2355b979-c2e7-484e-ac77-8f062c8f8906
 
 ## Repository structure
 
-TrueMetaverse is a Bun workspace monorepo. Product code lives under `metaverse/`, cross-service integration tests are kept at the repository root, and deployment infrastructure is separated from application code.
+Saiyairak 2D is a Bun workspace monorepo. Product code lives under `metaverse/`, cross-service integration tests are kept at the repository root, and deployment infrastructure is separated from application code.
 
 ```text
-TrueMetaverse/
+Saiyairak 2D/
 ├── .env.example                    # Safe local-development environment template
 ├── .gitignore
 ├── LICENSE                         # MIT license for source contributions
@@ -305,8 +305,8 @@ Make sure these ports are available for the complete local stack:
 ### Option A: complete Docker stack
 
 ```bash
-git clone https://github.com/Shivam583-hue/TrueMetaverse.git
-cd TrueMetaverse
+git clone https://github.com/chandekriangkrai-cmyk/Saiyairak-2D.git
+cd Saiyairak-2D
 cp .env.example .env
 ```
 
@@ -339,11 +339,11 @@ This runs Express on port 3000, the WebSocket server on 3001, and Vite on 5173. 
 
 ## Environment variables
 
-Copy `.env.example` to `.env` for local Docker development. Production secrets belong in `/opt/truemetaverse/.env.production` and must never be committed.
+Copy `.env.example` to `.env` for local Docker development. Production secrets belong in `/opt/saiyairak2d/.env.production` and must never be committed.
 
 | Variable                   | Required                   | Purpose                                                                                                                                 |
 | -------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `POSTGRES_DB`              | Docker                     | Database name; defaults to `truemetaverse` locally                                                                                      |
+| `POSTGRES_DB`              | Docker                     | Database name; defaults to `saiyairak2d` locally                                                                                      |
 | `POSTGRES_USER`            | Docker                     | PostgreSQL role used by the application                                                                                                 |
 | `POSTGRES_PASSWORD`        | Production                 | PostgreSQL password; use a long random value                                                                                            |
 | `POSTGRES_PORT`            | No                         | Local host port for PostgreSQL; defaults to `5433` in the full stack                                                                    |
@@ -367,7 +367,7 @@ Copy `.env.example` to `.env` for local Docker development. Production secrets b
 A suitable local `.env` starts with:
 
 ```dotenv
-POSTGRES_DB=truemetaverse
+POSTGRES_DB=saiyairak2d
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=replace-with-a-random-local-password
 POSTGRES_PORT=5433
@@ -506,17 +506,17 @@ Current result: **63 passing, 0 failing, 63 total** across 10 suites, stable acr
 
 Coverage shown in this README comes from Bun's instrumented fast suite. Jest integration coverage is not currently collected, so combining it into the coverage percentage would be misleading.
 
-## School Time deployment
+## Saiyairak 2D deployment
 
-The repository now includes a self-contained Render Blueprint for the School Time build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
+The repository now includes a self-contained Render Blueprint for the Saiyairak 2D build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
 
-[![Deploy School Time to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/TrueMetaverse)
+[![Deploy Saiyairak 2D to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/Saiyairak-2D)
 
 The free Render configuration is intended for testing/preview: free web services can spin down after inactivity, and free Render Postgres expires after 30 days. Upgrade the database before using the service as a durable production save system.
 
 ## Upstream reference deployment architecture
 
-The following section documents the upstream TrueMetaverse deployment model inherited by this foundation. It is reference infrastructure, not a claim that this School Time fork is already running on that VPS. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
+The following section documents the upstream Saiyairak 2D deployment model inherited by this foundation. It is reference infrastructure, not a claim that this Saiyairak 2D fork is already running on that VPS. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
 
 ### Public routing
 
@@ -535,7 +535,7 @@ Rate limiting depends on this: without it a single client's failed logins would 
 
 ### Runtime layout
 
-- `/opt/truemetaverse` contains application source, Compose files, deployment configuration, and `.env.production`.
+- `/opt/saiyairak2d` contains application source, Compose files, deployment configuration, and `.env.production`.
 - `compose.production.yaml` runs PostgreSQL, migration, seed, HTTP, WebSocket, and Nginx services.
 - `deploy/livekit/compose.yaml` runs Caddy, LiveKit, and Redis with host networking.
 - Only Nginx is exposed from the application Compose network, and only on loopback; Caddy is the public TLS entrypoint.
@@ -545,10 +545,10 @@ Rate limiting depends on this: without it a single client's failed logins would 
 
 ### Rebuild and redeploy
 
-After delivering updated source to `/opt/truemetaverse`, rebuild first and then recreate the affected containers:
+After delivering updated source to `/opt/saiyairak2d`, rebuild first and then recreate the affected containers:
 
 ```bash
-cd /opt/truemetaverse
+cd /opt/saiyairak2d
 
 docker compose \
   --env-file .env.production \

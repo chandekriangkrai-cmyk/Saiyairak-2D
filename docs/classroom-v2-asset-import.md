@@ -1,6 +1,6 @@
 # Classroom V2 — CC0 Asset Import
 
-TrueMetaverse is preparing a new classroom built from the **2D School Classroom Asset Pack by Styloo**.
+Saiyairak 2D is preparing a new classroom built from the **2D School Classroom Asset Pack by Styloo**.
 
 Source: https://styloo.itch.io/2dclassroom
 

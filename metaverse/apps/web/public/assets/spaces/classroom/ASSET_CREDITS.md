@@ -1,4 +1,4 @@
-# School Time Classroom Asset Credits
+# Saiyairak 2D Classroom Asset Credits
 
 - Source: Cool School tileset by NettySvit
 - License: CC0 1.0 Universal

@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build School Time production container
+      - name: Build Saiyairak 2D production container
         run: docker build -f deploy/render/Dockerfile -t school-time:ci .
       - name: Validate deployment files
         run: |

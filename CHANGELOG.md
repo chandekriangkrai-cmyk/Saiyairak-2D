@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to TrueMetaverse are documented in this file.
+All notable changes to Saiyairak 2D are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), grouped into **Added**, **Changed**, **Fixed**, **Removed**, and **Security**.
 
-TrueMetaverse does not publish tagged releases.
+Saiyairak 2D does not publish tagged releases.
 The live deployment at [metaverse.nemportfolio.in](https://metaverse.nemportfolio.in) tracks `main`, so each section below is a dated milestone on `main` rather than a version number.
 Sections are ordered newest first.
 

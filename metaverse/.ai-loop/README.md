@@ -1,4 +1,4 @@
-# School Time AI Development Loop
+# Saiyairak 2D AI Development Loop
 
 Cloudflare is the scheduler/trigger. GitHub is the source of truth. This directory stores loop state and QA history.
 

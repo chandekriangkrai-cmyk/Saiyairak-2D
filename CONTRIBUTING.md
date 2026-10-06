@@ -1,6 +1,6 @@
-# Contributing to TrueMetaverse
+# Contributing to Saiyairak 2D
 
-Thank you for helping improve TrueMetaverse. Contributions of all sizes are welcome: bug fixes, tests, documentation, accessibility improvements, performance work, new maps, and carefully scoped features.
+Thank you for helping improve Saiyairak 2D. Contributions of all sizes are welcome: bug fixes, tests, documentation, accessibility improvements, performance work, new maps, and carefully scoped features.
 
 This guide explains how to propose a change, run the project, respect its architectural boundaries, and prepare a pull request that is easy to review.
 
@@ -44,7 +44,7 @@ Be respectful and constructive in every project space. Critique ideas and code, 
 ## Repository structure
 
 ```text
-TrueMetaverse/
+Saiyairak 2D/
 ├── compose.yaml                 # Complete local stack
 ├── compose.production.yaml      # Production application stack
 ├── deploy/                      # Caddy, LiveKit, Redis, and backups
@@ -67,8 +67,8 @@ TrueMetaverse/
 The recommended setup runs the same service boundaries used in production:
 
 ```bash
-git clone https://github.com/Shivam583-hue/TrueMetaverse.git
-cd TrueMetaverse
+git clone https://github.com/chandekriangkrai-cmyk/Saiyairak-2D.git
+cd Saiyairak-2D
 cp .env.example .env
 make docker-config
 make docker-up

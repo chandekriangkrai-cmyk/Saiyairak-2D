@@ -564,7 +564,7 @@ export default function Arena() {
             </button>
             <div className="min-w-0">
               <div className="truncate font-pixel text-[0.62rem] uppercase tracking-wide text-coin">
-                School Time
+                Saiyairak 2D
               </div>
               <div className="truncate text-sm font-semibold">
                 English Learning App

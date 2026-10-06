@@ -1,11 +1,11 @@
-name: truemetaverse
+name: saiyairak2d
 
 x-app-build: &app-build
   context: ./metaverse
   dockerfile: Dockerfile
 
 x-app-environment: &app-environment
-  DATABASE_URL: postgresql://${POSTGRES_USER:-truemetaverse}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-truemetaverse}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-saiyairak2d}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-saiyairak2d}
   JWT_PASSWORD: ${JWT_PASSWORD:?JWT_PASSWORD is required}
   LOG_LEVEL: ${LOG_LEVEL:-info}
 
@@ -19,8 +19,8 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-truemetaverse}
-      POSTGRES_USER: ${POSTGRES_USER:-truemetaverse}
+      POSTGRES_DB: ${POSTGRES_DB:-saiyairak2d}
+      POSTGRES_USER: ${POSTGRES_USER:-saiyairak2d}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -37,7 +37,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:production
+    image: saiyairak2d-http:production
     working_dir: /app/packages/db
     command: ["bunx", "prisma", "migrate", "deploy"]
     environment: *app-environment
@@ -51,7 +51,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:production
+    image: saiyairak2d-http:production
     working_dir: /app/packages/db
     command: ["bun", "run", "seed.ts"]
     environment: *app-environment
@@ -65,7 +65,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:production
+    image: saiyairak2d-http:production
     init: true
     environment:
       <<: *app-environment
@@ -93,7 +93,7 @@ services:
     build:
       <<: *app-build
       target: ws
-    image: truemetaverse-ws:production
+    image: saiyairak2d-ws:production
     init: true
     environment:
       <<: *app-environment
@@ -113,7 +113,7 @@ services:
     build:
       <<: *app-build
       target: web
-    image: truemetaverse-web:production
+    image: saiyairak2d-web:production
     ports:
       - 127.0.0.1:5173:8081
     depends_on:

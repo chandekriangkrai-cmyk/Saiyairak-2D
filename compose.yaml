@@ -1,11 +1,11 @@
-name: truemetaverse
+name: saiyairak2d
 
 x-app-build: &app-build
   context: ./metaverse
   dockerfile: Dockerfile
 
 x-app-environment: &app-environment
-  DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-local-postgres-password}@db:5432/${POSTGRES_DB:-truemetaverse}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-local-postgres-password}@db:5432/${POSTGRES_DB:-saiyairak2d}
   JWT_PASSWORD: ${JWT_PASSWORD:-local-development-jwt-secret-change-me}
   LOG_LEVEL: ${LOG_LEVEL:-debug}
 
@@ -13,7 +13,7 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-truemetaverse}
+      POSTGRES_DB: ${POSTGRES_DB:-saiyairak2d}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-postgres-password}
     ports:
@@ -32,7 +32,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:local
+    image: saiyairak2d-http:local
     working_dir: /app/packages/db
     command: ["bunx", "prisma", "migrate", "deploy"]
     environment: *app-environment
@@ -44,7 +44,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:local
+    image: saiyairak2d-http:local
     working_dir: /app/packages/db
     command: ["bun", "run", "seed.ts"]
     environment: *app-environment
@@ -66,7 +66,7 @@ services:
     build:
       <<: *app-build
       target: http
-    image: truemetaverse-http:local
+    image: saiyairak2d-http:local
     init: true
     environment:
       <<: *app-environment
@@ -98,7 +98,7 @@ services:
     build:
       <<: *app-build
       target: ws
-    image: truemetaverse-ws:local
+    image: saiyairak2d-ws:local
     init: true
     environment:
       <<: *app-environment
@@ -115,7 +115,7 @@ services:
     build:
       <<: *app-build
       target: web
-    image: truemetaverse-web:local
+    image: saiyairak2d-web:local
     ports:
       - "${WEB_PORT:-5173}:8080"
     depends_on:

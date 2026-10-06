@@ -1,4 +1,4 @@
-# School Time single-service production image.
+# Saiyairak 2D single-service production image.
 # Public HTTP, WebSocket, authentication and the Phaser/React frontend share
 # one Render Web Service so the browser can use /api and /socket on one origin.
 FROM oven/bun:1.3.14-slim AS dependencies

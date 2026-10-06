@@ -2,8 +2,8 @@
 set -euo pipefail
 umask 077
 
-APP_DIR=/opt/truemetaverse
-BACKUP_DIR=/opt/backups/truemetaverse
+APP_DIR=/opt/saiyairak2d
+BACKUP_DIR=/opt/backups/saiyairak2d
 STAMP=$(date -u +%Y%m%dT%H%M%SZ)
 
 mkdir -p "$BACKUP_DIR"
