@@ -42,14 +42,15 @@ export class MultiplayerSpaceScene extends SpaceScene {
     this.callbacks.onMoveAttempt(tile.x, tile.y);
     this.callbacks.onLocalTile?.(tile.x, tile.y);
 
-    // Top-center garden passage: walking into the doorway enters Classroom.
-    // The collision map already leaves this corridor walkable; trigger at the
-    // first doorway tiles so the player does not have to reach the map edge.
+    // Top-center garden passage: walking through the visible doorway enters Classroom.
+    // Trigger slightly before the top edge so the player can reliably enter
+    // from the staircase/corridor without needing to squeeze into the final
+    // doorway row. These tiles are already walkable in the garden collision map.
     const inClassroomPassage =
       this.spaceConfig.id === "garden-library" &&
-      tile.y <= 2 &&
+      tile.y <= 4 &&
       tile.x >= 19 &&
-      tile.x <= 22;
+      tile.x <= 23;
     if (inClassroomPassage && !this.portalTriggered) {
       this.portalTriggered = true;
       EventBus.emit(SpaceEvent.RoomPortal, "classroom");
