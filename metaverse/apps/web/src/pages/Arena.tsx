@@ -106,8 +106,8 @@ export default function Arena() {
       changingRoom = true;
       try {
         const { spaces } = await api.officialSpaces();
-        const classroom = spaces.find((space) =>
-          space.name.trim().toLowerCase() === "classroom",
+        const classroom = spaces.find(
+          (space) => space.name.trim().toLowerCase() === "classroom",
         );
         if (classroom) navigate(`/space/${classroom.id}`);
       } finally {

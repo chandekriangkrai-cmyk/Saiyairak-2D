@@ -42,14 +42,14 @@ export class MultiplayerSpaceScene extends SpaceScene {
     this.callbacks.onMoveAttempt(tile.x, tile.y);
     this.callbacks.onLocalTile?.(tile.x, tile.y);
 
-    // The open passage at the top of Garden Library leads directly to Classroom.
-    // Keep this wide enough for touch/joystick movement and trigger only once
-    // until the player walks away from the passage.
+    // Top-center garden passage: walking into the doorway enters Classroom.
+    // The collision map already leaves this corridor walkable; trigger at the
+    // first doorway tiles so the player does not have to reach the map edge.
     const inClassroomPassage =
       this.spaceConfig.id === "garden-library" &&
-      tile.y <= 1 &&
-      tile.x >= 17 &&
-      tile.x <= 26;
+      tile.y <= 2 &&
+      tile.x >= 19 &&
+      tile.x <= 22;
     if (inClassroomPassage && !this.portalTriggered) {
       this.portalTriggered = true;
       EventBus.emit(SpaceEvent.RoomPortal, "classroom");
