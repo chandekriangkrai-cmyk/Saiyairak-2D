@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import type { ArenaSocket } from "../lib/ws";
 import { MultiplayerSpaceScene } from "../game/scenes/MultiplayerSpaceScene";
 import { EventBus, SpaceEvent } from "../game/EventBus";
 import { formatDuration } from "../lib/format";
+import { api } from "../lib/api";
 import { useArenaChat } from "../hooks/useArenaChat";
 import { useArenaConnection } from "../hooks/useArenaConnection";
 import { useStudyTimer } from "../hooks/useStudyTimer";
@@ -34,6 +35,7 @@ const floatingPanelClass =
 
 export default function Arena() {
   const { spaceId } = useParams<{ spaceId: string }>();
+  const navigate = useNavigate();
   const { session } = useAuth();
 
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -96,6 +98,27 @@ export default function Arena() {
   useEffect(() => {
     if (!video.screenShare) setWatching(false);
   }, [video.screenShare]);
+
+  useEffect(() => {
+    let changingRoom = false;
+    const enterRoomPortal = async (target: string) => {
+      if (target !== "classroom" || changingRoom) return;
+      changingRoom = true;
+      try {
+        const { spaces } = await api.officialSpaces();
+        const classroom = spaces.find((space) =>
+          space.name.trim().toLowerCase() === "classroom",
+        );
+        if (classroom) navigate(`/space/${classroom.id}`);
+      } finally {
+        changingRoom = false;
+      }
+    };
+    EventBus.on(SpaceEvent.RoomPortal, enterRoomPortal);
+    return () => {
+      EventBus.off(SpaceEvent.RoomPortal, enterRoomPortal);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     const openTabletMenu = (target: { type?: string }) => {

@@ -2,6 +2,7 @@ import { SpaceScene } from "./SpaceScene";
 import { RemotePlayer } from "../entities/RemotePlayer";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import { resolvePlayerLabel } from "../entities/playerLabel";
+import { EventBus, SpaceEvent } from "../EventBus";
 
 export type ArenaCallbacks = {
   onSceneReady: () => void;
@@ -17,6 +18,7 @@ export class MultiplayerSpaceScene extends SpaceScene {
   private knownAppearances = new Map<string, WokaAppearance>();
   private knownUsernames = new Map<string, string>();
   private lastSentTile: { x: number; y: number } | null = null;
+  private portalTriggered = false;
 
   constructor(private callbacks: ArenaCallbacks) {
     super();
@@ -39,6 +41,21 @@ export class MultiplayerSpaceScene extends SpaceScene {
     this.lastSentTile = { x: tile.x, y: tile.y };
     this.callbacks.onMoveAttempt(tile.x, tile.y);
     this.callbacks.onLocalTile?.(tile.x, tile.y);
+
+    // The open passage at the top of Garden Library leads directly to Classroom.
+    // Keep this wide enough for touch/joystick movement and trigger only once
+    // until the player walks away from the passage.
+    const inClassroomPassage =
+      this.spaceConfig.id === "garden-library" &&
+      tile.y <= 1 &&
+      tile.x >= 17 &&
+      tile.x <= 26;
+    if (inClassroomPassage && !this.portalTriggered) {
+      this.portalTriggered = true;
+      EventBus.emit(SpaceEvent.RoomPortal, "classroom");
+    } else if (!inClassroomPassage) {
+      this.portalTriggered = false;
+    }
   }
 
   spawnLocal(x: number, y: number, userId: string): void {
