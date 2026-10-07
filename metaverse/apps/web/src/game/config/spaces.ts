@@ -121,12 +121,9 @@ export const SPACES: Record<string, SpaceConfig> = {
     // Start clearly inside the classroom on the open lower-center aisle.
     spawnTile: { x: 20, y: 17 },
     zones: [],
-    // Return through the same lower-center doorway used by the classroom
-    // connection. Once the player reaches this doorway, the next room is the
-    // central garden/library courtyard (garden-library).
-    // The portal is at the physical doorway at the very bottom of the passage.
-    // The whole long corridor above it remains ordinary walkable space.
-    portals: [{ target: "garden-library", rect: { x: 17, y: 25, w: 5, h: 2 } }],
+    // Classroom return uses the real door on the right-hand wall shown in the map.
+    // Stand in front of that door and walk right to return to the central courtyard.
+    portals: [{ target: "garden-library", rect: { x: 24, y: 10, w: 1, h: 7 } }],
   },
   "hide-and-seek": {
     id: "hide-and-seek",

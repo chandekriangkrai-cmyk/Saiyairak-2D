@@ -63,10 +63,9 @@ export class MultiplayerSpaceScene extends SpaceScene {
     );
     if (!configured) return null;
 
-    // Classroom exits only activate when the player actually walks down into
-    // the doorway at the end of the lower passage. This prevents touching the
-    // upper part of the corridor from immediately sending the player away.
-    if (this.spaceConfig.id === "classroom" && this.movement.facing !== "down") {
+    // The classroom return door is on the right wall. Require the player to
+    // face right into the door so merely walking past the wall cannot trigger it.
+    if (this.spaceConfig.id === "classroom" && this.movement.facing !== "right") {
       return null;
     }
 
