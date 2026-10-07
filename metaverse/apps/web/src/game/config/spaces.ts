@@ -124,7 +124,9 @@ export const SPACES: Record<string, SpaceConfig> = {
     // Return through the same lower-center doorway used by the classroom
     // connection. Once the player reaches this doorway, the next room is the
     // central garden/library courtyard (garden-library).
-    portals: [{ target: "garden-library", rect: { x: 17, y: 20, w: 5, h: 2 } }],
+    // Trigger only at the far end of the lower passage, not as soon as the
+    // player steps into the red-marked corridor.
+    portals: [{ target: "garden-library", rect: { x: 17, y: 26, w: 5, h: 1 } }],
   },
   "hide-and-seek": {
     id: "hide-and-seek",
