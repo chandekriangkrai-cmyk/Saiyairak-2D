@@ -121,7 +121,10 @@ export const SPACES: Record<string, SpaceConfig> = {
     // Start clearly inside the classroom on the open lower-center aisle.
     spawnTile: { x: 20, y: 17 },
     zones: [],
-    portals: [{ target: "garden-library", rect: { x: 17, y: 20, w: 5, h: 1 } }],
+    // Return through the same lower-center doorway used by the classroom
+    // connection. Once the player reaches this doorway, the next room is the
+    // central garden/library courtyard (garden-library).
+    portals: [{ target: "garden-library", rect: { x: 17, y: 20, w: 5, h: 2 } }],
   },
   "hide-and-seek": {
     id: "hide-and-seek",
