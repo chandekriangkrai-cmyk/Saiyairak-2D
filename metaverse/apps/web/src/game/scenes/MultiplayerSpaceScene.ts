@@ -61,7 +61,16 @@ export class MultiplayerSpaceScene extends SpaceScene {
     const configured = this.spaceConfig.portals?.find((portal) =>
       tileInRect(tile, portal.rect),
     );
-    return configured?.target ?? null;
+    if (!configured) return null;
+
+    // Classroom exits only activate when the player actually walks down into
+    // the doorway at the end of the lower passage. This prevents touching the
+    // upper part of the corridor from immediately sending the player away.
+    if (this.spaceConfig.id === "classroom" && this.movement.facing !== "down") {
+      return null;
+    }
+
+    return configured.target;
   }
 
   spawnLocal(x: number, y: number, userId: string): void {
