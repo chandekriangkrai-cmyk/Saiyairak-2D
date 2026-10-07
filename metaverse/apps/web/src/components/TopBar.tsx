@@ -32,7 +32,7 @@ export default function TopBar() {
           to="/"
           className="shrink-0 font-pixel text-[0.9rem] font-bold tracking-[0.08em] text-coin no-underline sm:text-[1.05rem]"
         >
-          Saiyairak <span className="text-moonlight">2D</span>
+          Fun class <span className="text-moonlight">2D</span>
         </Link>
         <span className="hidden border-l border-line-strong pl-3 font-mono text-[0.65rem] text-fog sm:inline">
           โรงเรียน
