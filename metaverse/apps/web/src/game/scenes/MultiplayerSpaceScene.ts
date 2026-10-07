@@ -46,7 +46,8 @@ export class MultiplayerSpaceScene extends SpaceScene {
     // Room portals turn the garden-library map into the school's central hub.
     // The hub is a real walkable space: players walk to a doorway, cross it,
     // and enter the destination room. Other rooms use their lower-center
-    // doorway to return to the hub. Keep the rules here so adding a new room
+    // doorway to return to the hub. The classroom uses its right-hand door;
+    // other rooms can retain their configured return doorway. Keep the rules here so adding a new room
     // later does not require changing the multiplayer transport layer.
     const target = this.resolveRoomPortal(tile);
     if (target && !this.portalTriggered) {

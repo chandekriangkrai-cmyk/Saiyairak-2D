@@ -213,6 +213,13 @@ export class SpaceScene extends Phaser.Scene {
     // The tablet sits on the teacher desk, so it must remain non-walkable too.
     this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
 
+    // The classroom exits through the real door on the right-hand wall.
+    // Keep the wall solid everywhere else, but open the doorway tile so the
+    // player can physically walk through it before the room portal fires.
+    for (let y = 10; y <= 16; y++) {
+      this.grid.setBlocked(25, y, false);
+    }
+
     // The bottom-center doorway is the classroom's physical connection to the
     // central school hub. Keep the rest of the lower edge closed so the player
     // cannot walk outside the room artwork.

@@ -123,7 +123,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     zones: [],
     // Classroom return uses the real door on the right-hand wall shown in the map.
     // Stand in front of that door and walk right to return to the central courtyard.
-    portals: [{ target: "garden-library", rect: { x: 24, y: 10, w: 1, h: 7 } }],
+    portals: [{ target: "garden-library", rect: { x: 25, y: 10, w: 1, h: 7 } }],
   },
   "hide-and-seek": {
     id: "hide-and-seek",
