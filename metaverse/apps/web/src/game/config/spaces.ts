@@ -16,6 +16,11 @@ export type SpaceZone = {
   rect: TileRect;
 };
 
+export type SpacePortal = {
+  target: string;
+  rect: TileRect;
+};
+
 export type PresentationConfig = {
   zone: string;
   lectern: TileCoord;
@@ -30,6 +35,7 @@ export type SpaceConfig = {
   tileSize: number;
   spawnTile: TileCoord;
   zones: SpaceZone[];
+  portals?: SpacePortal[];
   study?: boolean;
   music?: string;
   video?: boolean;
@@ -74,8 +80,14 @@ export const SPACES: Record<string, SpaceConfig> = {
     imagePath: "/assets/spaces/garden-library/gardenlibspace.png",
     collisionPath: "/assets/spaces/garden-library/collision.json",
     tileSize: 40,
+    // Central hub: this room is the physical connector between the school spaces.
     spawnTile: { x: 27, y: 13 },
     zones: [],
+    portals: [
+      { target: "classroom", rect: { x: 19, y: 0, w: 5, h: 5 } },
+      { target: "virtual-office", rect: { x: 0, y: 9, w: 5, h: 6 } },
+      { target: "multiroom-house", rect: { x: 38, y: 9, w: 5, h: 6 } },
+    ],
   },
   "multiroom-house": {
     id: "multiroom-house",
@@ -84,6 +96,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     tileSize: 40,
     spawnTile: { x: 13, y: 13 },
     zones: [],
+    portals: [{ target: "garden-library", rect: { x: 0, y: 10, w: 4, h: 6 } }],
     music: "/assets/spaces/multiroom-house/music.mp3",
   },
   "virtual-office": {
@@ -93,19 +106,12 @@ export const SPACES: Record<string, SpaceConfig> = {
     tileSize: 40,
     spawnTile: { x: 19, y: 13 },
     zones: [{ id: "presentation", rect: { x: 2, y: 9, w: 8, h: 7 } }],
+    portals: [{ target: "garden-library", rect: { x: 0, y: 8, w: 4, h: 8 } }],
     presentation: {
       zone: "presentation",
       lectern: { x: 8, y: 11 },
       lecternRadius: 1,
     },
-  },
-  cafe: {
-    id: "cafe",
-    imagePath: "/assets/spaces/cafe/space.svg",
-    collisionPath: "/assets/spaces/cafe/collision.json",
-    tileSize: 40,
-    spawnTile: { x: 14, y: 17 },
-    zones: [],
   },
   classroom: {
     id: "classroom",
@@ -115,6 +121,7 @@ export const SPACES: Record<string, SpaceConfig> = {
     // Start clearly inside the classroom on the open lower-center aisle.
     spawnTile: { x: 20, y: 17 },
     zones: [],
+    portals: [{ target: "garden-library", rect: { x: 17, y: 20, w: 5, h: 1 } }],
   },
   "hide-and-seek": {
     id: "hide-and-seek",

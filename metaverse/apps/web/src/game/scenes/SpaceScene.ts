@@ -22,7 +22,7 @@ const TABLET_TILE: TileCoord = { x: 19, y: 9 };
 
 // Classroom is intentionally a self-contained play space. Keep the player
 // inside the room while leaving the furniture collision from the imported map.
-const CLASSROOM_BOUNDS = { left: 11, right: 24, top: 9, bottom: 19 } as const;
+const CLASSROOM_BOUNDS = { left: 11, right: 24, top: 9, bottom: 20 } as const;
 // In the classroom, desks and chairs are intentionally walk-through.
 // Only the teacher's desk at the front remains solid.
 const CLASSROOM_TEACHER_DESK = { left: 17, right: 20, top: 9, bottom: 9 } as const;
@@ -212,6 +212,15 @@ export class SpaceScene extends Phaser.Scene {
 
     // The tablet sits on the teacher desk, so it must remain non-walkable too.
     this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
+
+    // The bottom-center doorway is the classroom's physical connection to the
+    // central school hub. Keep the rest of the lower edge closed so the player
+    // cannot walk outside the room artwork.
+    for (let y = 20; y < this.grid.rows; y++) {
+      for (let x = CLASSROOM_BOUNDS.left; x <= CLASSROOM_BOUNDS.right; x++) {
+        if (x < 17 || x > 21) this.grid.setBlocked(x, y, true);
+      }
+    }
   }
 
   private createTablet(tileSize: number): void {

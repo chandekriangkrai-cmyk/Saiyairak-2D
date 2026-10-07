@@ -102,14 +102,18 @@ export default function Arena() {
   useEffect(() => {
     let changingRoom = false;
     const enterRoomPortal = async (target: string) => {
-      if (target !== "classroom" || changingRoom) return;
+      if (!target || changingRoom) return;
       changingRoom = true;
       try {
         const { spaces } = await api.officialSpaces();
-        const classroom = spaces.find(
-          (space) => space.name.trim().toLowerCase() === "classroom",
+        const destination = spaces.find(
+          (space) =>
+            space.id === target ||
+            space.name.trim().toLowerCase() === target.trim().toLowerCase(),
         );
-        if (classroom) navigate(`/space/${classroom.id}`);
+        if (destination && destination.id !== spaceId) {
+          navigate(`/space/${destination.id}`);
+        }
       } finally {
         changingRoom = false;
       }

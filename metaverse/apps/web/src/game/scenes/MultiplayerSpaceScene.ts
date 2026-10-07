@@ -3,6 +3,7 @@ import { RemotePlayer } from "../entities/RemotePlayer";
 import type { WokaAppearance } from "../woka/wokaConfig";
 import { resolvePlayerLabel } from "../entities/playerLabel";
 import { EventBus, SpaceEvent } from "../EventBus";
+import { tileInRect } from "../config/spaces";
 
 export type ArenaCallbacks = {
   onSceneReady: () => void;
@@ -42,21 +43,25 @@ export class MultiplayerSpaceScene extends SpaceScene {
     this.callbacks.onMoveAttempt(tile.x, tile.y);
     this.callbacks.onLocalTile?.(tile.x, tile.y);
 
-    // Top-center garden passage: walking through the visible doorway enters Classroom.
-    // Trigger slightly before the top edge so the player can reliably enter
-    // from the staircase/corridor without needing to squeeze into the final
-    // doorway row. These tiles are already walkable in the garden collision map.
-    const inClassroomPassage =
-      this.spaceConfig.id === "garden-library" &&
-      tile.y <= 4 &&
-      tile.x >= 19 &&
-      tile.x <= 23;
-    if (inClassroomPassage && !this.portalTriggered) {
+    // Room portals turn the garden-library map into the school's central hub.
+    // The hub is a real walkable space: players walk to a doorway, cross it,
+    // and enter the destination room. Other rooms use their lower-center
+    // doorway to return to the hub. Keep the rules here so adding a new room
+    // later does not require changing the multiplayer transport layer.
+    const target = this.resolveRoomPortal(tile);
+    if (target && !this.portalTriggered) {
       this.portalTriggered = true;
-      EventBus.emit(SpaceEvent.RoomPortal, "classroom");
-    } else if (!inClassroomPassage) {
+      EventBus.emit(SpaceEvent.RoomPortal, target);
+    } else if (!target) {
       this.portalTriggered = false;
     }
+  }
+
+  private resolveRoomPortal(tile: { x: number; y: number }): string | null {
+    const configured = this.spaceConfig.portals?.find((portal) =>
+      tileInRect(tile, portal.rect),
+    );
+    return configured?.target ?? null;
   }
 
   spawnLocal(x: number, y: number, userId: string): void {
