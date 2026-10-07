@@ -58,7 +58,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
           aria-hidden="true"
         >
           <div className="relative z-[1] flex justify-between gap-4 font-mono text-[0.64rem] tracking-[0.08em] text-[#b8e9dc] max-[540px]:text-[0.56rem]">
-            <span>SAIYAIRAK 2D</span>
+            <span>FUN CLASS 2D</span>
             <span>เข้าสู่โรงเรียน</span>
           </div>
           <div className="relative z-[1] mt-[76px] w-full max-w-[420px] max-[820px]:mt-10 max-[540px]:mt-8">
@@ -99,7 +99,7 @@ export default function Auth({ mode }: { mode: "signin" | "signup" }) {
             className="mb-[50px] self-start font-pixel text-[1.06rem] font-bold tracking-[0.02em] text-coin no-underline max-[820px]:mb-9 max-[540px]:mb-8"
             to="/"
           >
-            Saiyairak <span className="text-moonlight">2D</span>
+            Fun class <span className="text-moonlight">2D</span>
           </Link>
 
           <form className="w-full max-w-[390px]" onSubmit={handleSubmit}>
