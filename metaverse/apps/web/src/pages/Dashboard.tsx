@@ -129,8 +129,7 @@ export default function Dashboard() {
               count.
             </p>
           </div>
-
-
+        </section>
 
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_310px] items-start gap-8 max-[940px]:grid-cols-1">
           <div className="min-w-0 space-y-10">
