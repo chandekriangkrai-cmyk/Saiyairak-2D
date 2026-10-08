@@ -33,7 +33,3 @@ export const authLimiter = createRateLimiter({
   skipSuccessfulRequests: true,
 });
 
-export const roomCodeLimiter = createRateLimiter({
-  windowMs: MINUTE,
-  limit: 30,
-});
