@@ -45,8 +45,6 @@ export default function Dashboard() {
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [joinCode, setJoinCode] = useState("");
-  const [joinError, setJoinError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [pendingDelete, setPendingDelete] = useState<SpaceSummary | null>(null);
@@ -77,19 +75,6 @@ export default function Dashboard() {
         .catch(() => {});
     }
   }, [refreshSpaces, session]);
-
-  async function joinByCode(e: FormEvent) {
-    e.preventDefault();
-    setJoinError(null);
-    try {
-      const res = await api.spaceByCode(joinCode);
-      navigate(`/space/${res.spaceId}`);
-    } catch (err) {
-      setJoinError(
-        err instanceof ApiError ? err.message : "ไม่พบห้องนี้",
-      );
-    }
-  }
 
   async function saveAppearance(next: WokaAppearance) {
     setAppearance(next);
