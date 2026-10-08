@@ -117,43 +117,49 @@ def test():
     sh(["git","diff","--check"])
 
 def main():
-    if sh(["git","status","--porcelain"]) .strip():
+    if sh(["git","status","--porcelain"]).strip():
         print("Dirty checkout detected; refusing autonomous edits.")
         return
+
     calls = 0
     task = """Inspect the current game and implement the single most useful low-risk improvement you can justify from the codebase.
 Prefer fixing an actual UX/gameplay issue over adding a speculative feature."""
-    for attempt in range(MAX_CALLS):
+
+    def call_ai(instruction, extra=""):
+        nonlocal calls
+        if calls >= MAX_CALLS:
+            raise RuntimeError(f"AI call hard cap reached ({MAX_CALLS}).")
         calls += 1
-        try:
-            result = ask(task)
-            print("AI:", result.get("summary",""))
-            if not apply_patch(result.get("patch","")):
-                print("No safe patch proposed.")
-                return
-            try:
-                test()
-                print("BUILD/TYPECHECK: PASS")
-                return
-            except Exception as e:
-                err = str(e)
-                print("TEST FAILED; reverting and asking AI for a focused fix.")
-                sh(["git","reset","--hard","HEAD"], check=False)
-                task = """A previous proposed change failed validation. Fix ONLY the validation failure while preserving the existing game behavior.
-Do not broaden scope. Return a minimal patch."""
-                # Include only the failure, not unbounded logs.
-                extra = "\nVALIDATION FAILURE:\n" + err[-9000:]
-                result = ask(task, extra)
-                if not apply_patch(result.get("patch","")):
-                    raise RuntimeError("No safe repair patch.")
-                test()
-                print("REPAIR BUILD/TYPECHECK: PASS")
-                return
-        except Exception as e:
-            print("AUTONOMOUS CYCLE STOPPED:", str(e)[-12000:])
-            sh(["git","reset","--hard","HEAD"], check=False)
+        return ask(instruction, extra)
+
+    try:
+        result = call_ai(task)
+        print("AI:", result.get("summary",""))
+        if not apply_patch(result.get("patch","")):
+            print("No safe patch proposed.")
             return
-    print("AI call budget exhausted without a verified change.")
+
+        try:
+            test()
+            print(f"BUILD/TYPECHECK: PASS (AI calls: {calls}/{MAX_CALLS})")
+            return
+        except Exception as e:
+            err = str(e)
+            print("TEST FAILED; reverting and using one bounded repair call.")
+            sh(["git","reset","--hard","HEAD"], check=False)
+
+            repair_task = """A previous proposed change failed validation. Fix ONLY the validation failure while preserving the existing game behavior.
+Do not broaden scope. Return a minimal patch."""
+            extra = "\nVALIDATION FAILURE:\n" + err[-9000:]
+            result = call_ai(repair_task, extra)
+
+            if not apply_patch(result.get("patch","")):
+                raise RuntimeError("No safe repair patch.")
+            test()
+            print(f"REPAIR BUILD/TYPECHECK: PASS (AI calls: {calls}/{MAX_CALLS})")
+    except Exception as e:
+        print("AUTONOMOUS CYCLE STOPPED:", str(e)[-12000:])
+        sh(["git","reset","--hard","HEAD"], check=False)
 
 if __name__ == "__main__":
     main()
