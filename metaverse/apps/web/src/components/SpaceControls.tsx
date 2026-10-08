@@ -180,7 +180,6 @@ export function MobileJoystick() {
       <button
         type="button"
         className="relative grid h-[6.5rem] w-[6.5rem] touch-none select-none place-items-center rounded-full border border-line-strong bg-[#111326d9] shadow-[0_10px_30px_#05061188,inset_0_0_0_1px_#ffffff08] outline-none backdrop-blur-md focus-visible:ring-2 focus-visible:ring-portal focus-visible:ring-offset-2 focus-visible:ring-offset-midnight"
-        aria-label="บังคับตัวละคร ลากจอยสติ๊กหรือใช้ปุ่มลูกศร"
         aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight W A S D"
         onContextMenu={(event) => event.preventDefault()}
         onKeyDown={handleKeyDown}
