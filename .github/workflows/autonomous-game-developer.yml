@@ -1,0 +1,64 @@
+name: Autonomous Game Developer
+
+on:
+  schedule:
+    # 03:00 UTC = 10:00 Asia/Bangkok
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: autonomous-game-developer
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash' }}
+      RENDER_URL: ${{ vars.RENDER_URL || 'https://school-time-8zt2.onrender.com' }}
+      MAX_AI_CALLS: "3"
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "autonomous-game-developer[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: metaverse
+        run: bun install --frozen-lockfile
+
+      - name: Autonomous development cycle
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/autonomous_developer.py
+
+      - name: Push verified change
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git diff --check
+            git add metaverse/apps/web/src metaverse/apps/web/public
+            git commit -m "feat: autonomous game improvement"
+            git push origin HEAD:main
+          else
+            echo "No safe change produced; nothing to deploy."
+
+      - name: Verify Render production
+        if: success()
+        run: |
+          echo "Waiting briefly for Render auto-deploy..."
+          sleep 20
+          curl --fail --silent --show-error --max-time 20 "$RENDER_URL/healthz" || true
