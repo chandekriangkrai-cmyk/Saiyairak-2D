@@ -106,7 +106,7 @@ describe("Authentication", () => {
     expect(systemAccount.data).toEqual(unknownUsername.data);
   });
 
-  test("The issued token does not carry a role claim", async () => {
+  test("The issued token carries the user's role claim", async () => {
     const username = `claims-${Math.random()}`;
     await http.post(`${BACKEND_URL}/api/v1/signup`, {
       username,
@@ -121,6 +121,6 @@ describe("Authentication", () => {
       Buffer.from(response.data.token.split(".")[1], "base64").toString(),
     );
     expect(claims.userId).toBeDefined();
-    expect(claims.role).toBeUndefined();
+    expect(claims.role).toBe("User");
   });
 });

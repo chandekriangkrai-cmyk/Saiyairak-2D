@@ -12,6 +12,7 @@ export type Session = {
   token: string;
   userId: string;
   username: string;
+  role?: "Admin" | "Teacher" | "User";
 };
 
 type AuthContextValue = {
@@ -25,7 +26,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function decodeSession(token: string, username: string): Session {
   const payload = JSON.parse(atob(token.split(".")[1]!));
-  return { token, userId: payload.userId, username };
+  return { token, userId: payload.userId, username, role: payload.role };
 }
 
 function loadSession(): Session | null {

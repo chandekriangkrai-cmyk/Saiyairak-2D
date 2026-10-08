@@ -250,12 +250,14 @@ export default function Dashboard() {
                     ห้องที่คุณสร้าง
                   </h2>
                 </div>
-                <button
-                  className={button.primary}
-                  onClick={() => setShowCreate(true)}
-                >
-                  สร้างห้องใหม่
-                </button>
+                {session?.role === "Admin" && (
+                  <button
+                    className={button.primary}
+                    onClick={() => setShowCreate(true)}
+                  >
+                    สร้างห้องใหม่
+                  </button>
+                )}
               </div>
               {error && (
                 <p className={errorClass} role="alert">

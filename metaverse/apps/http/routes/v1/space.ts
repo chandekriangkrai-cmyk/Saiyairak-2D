@@ -1,6 +1,6 @@
 import { Router } from "express";
 import client, { isUniqueConstraintViolation } from "@repo/db/client";
-import { userMiddleware } from "../../middleware/user";
+import { adminMiddleware, userMiddleware } from "../../middleware/user";
 import { CreateSpaceSchema } from "../../types";
 import { roomCodeLimiter } from "../../middleware/rateLimit";
 import { isWhiteboardEnabled } from "@repo/types";
@@ -15,7 +15,7 @@ function generateCode(length: number) {
   return code;
 }
 
-spaceRouter.post("/", userMiddleware, async (req, res) => {
+spaceRouter.post("/", userMiddleware, adminMiddleware, async (req, res) => {
   const parsedData = CreateSpaceSchema.safeParse(req.body);
   if (!parsedData.success) {
     res.status(400).json({ message: "Validation failed" });

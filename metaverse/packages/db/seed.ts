@@ -72,6 +72,28 @@ async function main() {
     system = await client.user.create({ data: { username: "system", password: "!locked", role: "Admin" } });
   }
 
+  const adminUsername = process.env.ADMIN_USERNAME?.trim();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminUsername && adminPassword) {
+    let admin = await client.user.findUnique({ where: { username: adminUsername } });
+    if (!admin) {
+      admin = await client.user.create({
+        data: {
+          username: adminUsername,
+          password: await hashPassword(adminPassword),
+          role: "Admin",
+        },
+      });
+      logger.info({ username: adminUsername }, "admin account created");
+    } else if (admin.role !== "Admin") {
+      admin = await client.user.update({
+        where: { id: admin.id },
+        data: { role: "Admin" },
+      });
+      logger.info({ username: adminUsername }, "existing account promoted to admin");
+    }
+  }
+
   const teacherUsername = process.env.TEACHER_USERNAME?.trim() || "teacher";
   const teacherPassword = process.env.TEACHER_PASSWORD || "SchoolTimeTeacher2026!";
   let teacher = await client.user.findUnique({ where: { username: teacherUsername } });
