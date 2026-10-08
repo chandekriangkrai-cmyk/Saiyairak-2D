@@ -459,11 +459,12 @@ export default function Arena() {
           <span className={hudChipAlertClass}>{video.shareError}</span>
         )}
 
-        {conn.errorText ? (
+        {conn.errorText && (
           <span className={hudChipAlertClass}>
             {conn.errorText} <Link to="/">Back to rooms</Link>
           </span>
-)}
+        )}
+
       </div>
 
       {!inputBlocked && (
