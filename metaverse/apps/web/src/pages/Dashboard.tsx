@@ -145,48 +145,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <form
-            className="min-w-0 rounded-xl border border-line-strong bg-dusk p-5 shadow-[0_14px_34px_#05061166] sm:p-6"
-            onSubmit={joinByCode}
-          >
-            <div className="mb-4 flex min-w-0 items-center gap-3">
-              <span
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#665623] bg-coin/10 font-pixel text-sm text-coin"
-                aria-hidden="true"
-              >
-                #
-              </span>
-              <div>
-                <p className={`${eyebrowClass} mb-1`}>เข้าร่วมห้อง</p>
-                <h2 className="font-pixel text-[0.78rem] leading-relaxed text-moonlight">
-                  ใส่รหัสห้อง
-                </h2>
-              </div>
-            </div>
-            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-2 max-[390px]:grid-cols-1">
-              <input
-                type="text"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="QK7M2X"
-                maxLength={8}
-                aria-label="รหัสห้อง"
-                className={`${inputClass} font-mono uppercase tracking-[0.14em]`}
-              />
-              <button
-                className={button.primary}
-                disabled={joinCode.trim().length < 4}
-              >
-                เข้าร่วม
-              </button>
-            </div>
-            {joinError && (
-              <p className={errorClass} role="alert">
-                {joinError}
-              </p>
-            )}
-          </form>
-        </section>
+
 
         <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_310px] items-start gap-8 max-[940px]:grid-cols-1">
           <div className="min-w-0 space-y-10">
