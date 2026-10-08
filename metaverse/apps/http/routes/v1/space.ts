@@ -2,7 +2,6 @@ import { Router } from "express";
 import client, { isUniqueConstraintViolation } from "@repo/db/client";
 import { adminMiddleware, userMiddleware } from "../../middleware/user";
 import { CreateSpaceSchema } from "../../types";
-import { roomCodeLimiter } from "../../middleware/rateLimit";
 import { isWhiteboardEnabled } from "@repo/types";
 export const spaceRouter = Router();
 
@@ -120,27 +119,6 @@ spaceRouter.get("/official", async (req, res) => {
     })),
   });
 });
-
-spaceRouter.get(
-  "/code/:code",
-  roomCodeLimiter,
-  userMiddleware,
-  async (req, res) => {
-    const space = await client.space.findUnique({
-      where: {
-        code: (req.params.code as string).toUpperCase(),
-      },
-      select: {
-        id: true,
-      },
-    });
-    if (!space) {
-      res.status(400).json({ message: "No room with that code" });
-      return;
-    }
-    res.json({ spaceId: space.id });
-  },
-);
 
 spaceRouter.delete("/:spaceId", userMiddleware, async (req, res) => {
   const space = await client.space.findUnique({
