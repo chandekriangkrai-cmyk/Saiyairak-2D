@@ -463,16 +463,7 @@ export default function Arena() {
           <span className={hudChipAlertClass}>
             {conn.errorText} <Link to="/">Back to rooms</Link>
           </span>
-        ) : (
-          <span className={`${hudChipClass} font-mono text-[0.65rem]`}>
-            <span className="[@media(pointer:coarse)]:hidden">
-              ปุ่มลูกศร / WASD เพื่อเดิน
-            </span>
-            <span className="hidden [@media(pointer:coarse)]:inline">
-              ใช้จอยสติ๊กเพื่อเดิน
-            </span>
-          </span>
-        )}
+)}
       </div>
 
       {!inputBlocked && (
