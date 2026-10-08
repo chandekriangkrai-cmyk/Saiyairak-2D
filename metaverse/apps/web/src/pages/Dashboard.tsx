@@ -242,93 +242,95 @@ export default function Dashboard() {
               )}
             </section>
 
-            <section className="min-w-0">
-              <div className={sectionHeadingClass}>
-                <div className="min-w-0">
-                  <p className={eyebrowClass}>ห้องของคุณ</p>
-                  <h2 className="font-pixel text-[0.9rem] leading-relaxed text-moonlight">
-                    ห้องที่คุณสร้าง
-                  </h2>
-                </div>
-                {session?.role === "Admin" && (
-                  <button
-                    className={button.primary}
-                    onClick={() => setShowCreate(true)}
-                  >
-                    สร้างห้องใหม่
-                  </button>
-                )}
-              </div>
-              {error && (
-                <p className={errorClass} role="alert">
-                  {error}
-                </p>
-              )}
-              {spaces === null && (
-                <div className={emptyClass}>กำลังโหลดห้องของคุณ...</div>
-              )}
-              {spaces && spaces.length === 0 && (
-                <div className={emptyClass}>
-                  ยังไม่มีห้อง สร้างห้องสำหรับกิจกรรมครั้งถัดไป
-                </div>
-              )}
-              {spaces && spaces.length > 0 && (
-                <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
-                  {(spaces ?? []).map((space) => (
-                    <div
-                      key={space.id}
-                      className={spaceCardClass}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => navigate(`/space/${space.id}`)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && navigate(`/space/${space.id}`)
-                      }
+            {session?.role === "Admin" && (
+              <section className="min-w-0">
+                <div className={sectionHeadingClass}>
+                  <div className="min-w-0">
+                    <p className={eyebrowClass}>ห้องของคุณ</p>
+                    <h2 className="font-pixel text-[0.9rem] leading-relaxed text-moonlight">
+                      ห้องที่คุณสร้าง
+                    </h2>
+                  </div>
+                  {session?.role === "Admin" && (
+                    <button
+                      className={button.primary}
+                      onClick={() => setShowCreate(true)}
                     >
-                      <div className="aspect-[16/8] overflow-hidden border-b border-line bg-[#111326]">
-                        {space.thumbnail && (
-                          <img
-                            className="h-full w-full object-cover transition-transform duration-300 ease-out-snappy group-hover:scale-[1.03]"
-                            src={space.thumbnail}
-                            alt=""
-                          />
-                        )}
-                      </div>
-                      <div className="flex min-w-0 items-center justify-between gap-3 p-4 pb-3">
-                        <span className="truncate font-semibold text-moonlight">
-                          {space.name}
-                        </span>
-                        <button
-                          className="shrink-0 rounded-md border border-line-strong bg-midnight px-2 py-1 font-mono text-[0.65rem] tracking-[0.08em] text-coin transition-colors hover:border-coin/60"
-                          title={
-                            copiedCode === space.code
-                              ? "Copied"
-                              : "Copy room code"
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyRoomCode(space.code);
-                          }}
-                        >
-                          {copiedCode === space.code ? "COPIED" : space.code}
-                        </button>
-                      </div>
-                      <div className="flex justify-end border-t border-line px-3 py-2.5">
-                        <button
-                          className={`${button.danger} min-h-8 px-3 py-1.5 text-xs`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            askToDelete(space);
-                          }}
-                        >
-                          ลบ
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                      สร้างห้องใหม่
+                    </button>
+                  )}
                 </div>
-              )}
-            </section>
+                {error && (
+                  <p className={errorClass} role="alert">
+                    {error}
+                  </p>
+                )}
+                {spaces === null && (
+                  <div className={emptyClass}>กำลังโหลดห้องของคุณ...</div>
+                )}
+                {spaces && spaces.length === 0 && (
+                  <div className={emptyClass}>
+                    ยังไม่มีห้อง สร้างห้องสำหรับกิจกรรมครั้งถัดไป
+                  </div>
+                )}
+                {spaces && spaces.length > 0 && (
+                  <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
+                    {(spaces ?? []).map((space) => (
+                      <div
+                        key={space.id}
+                        className={spaceCardClass}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => navigate(`/space/${space.id}`)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && navigate(`/space/${space.id}`)
+                        }
+                      >
+                        <div className="aspect-[16/8] overflow-hidden border-b border-line bg-[#111326]">
+                          {space.thumbnail && (
+                            <img
+                              className="h-full w-full object-cover transition-transform duration-300 ease-out-snappy group-hover:scale-[1.03]"
+                              src={space.thumbnail}
+                              alt=""
+                            />
+                          )}
+                        </div>
+                        <div className="flex min-w-0 items-center justify-between gap-3 p-4 pb-3">
+                          <span className="truncate font-semibold text-moonlight">
+                            {space.name}
+                          </span>
+                          <button
+                            className="shrink-0 rounded-md border border-line-strong bg-midnight px-2 py-1 font-mono text-[0.65rem] tracking-[0.08em] text-coin transition-colors hover:border-coin/60"
+                            title={
+                              copiedCode === space.code
+                                ? "Copied"
+                                : "Copy room code"
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyRoomCode(space.code);
+                            }}
+                          >
+                            {copiedCode === space.code ? "COPIED" : space.code}
+                          </button>
+                        </div>
+                        <div className="flex justify-end border-t border-line px-3 py-2.5">
+                          <button
+                            className={`${button.danger} min-h-8 px-3 py-1.5 text-xs`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              askToDelete(space);
+                            }}
+                          >
+                            ลบ
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
 
           <aside className="sticky top-[90px] min-w-0 rounded-xl border border-line bg-dusk p-5 shadow-[0_14px_34px_#05061155] max-[940px]:static">
