@@ -106,10 +106,6 @@ export const api = {
 
   mySpaces: () => request<{ spaces: SpaceSummary[] }>("/space/all"),
   officialSpaces: () => request<{ spaces: SpaceSummary[] }>("/space/official"),
-  spaceByCode: (code: string) =>
-    request<{ spaceId: string }>(
-      `/space/code/${encodeURIComponent(code.trim())}`,
-    ),
   space: (spaceId: string) => request<SpaceDetail>(`/space/${spaceId}`),
   createSpace: (name: string, mapId: string) =>
     request<{ spaceId: string; code: string }>("/space", {
