@@ -1,6 +1,9 @@
 name: Autonomous Game Developer
 
 on:
+  push:
+    paths:
+      - ".github/workflows/autonomous-game-developer.yml"
   schedule:
     # 03:00 UTC = 10:00 Asia/Bangkok
     - cron: "0 3 * * *"
