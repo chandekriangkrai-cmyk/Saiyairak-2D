@@ -17,7 +17,7 @@ on:
 jobs:
   build-web:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: metaverse
@@ -34,7 +34,7 @@ jobs:
 
   production-container:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Build Saiyairak 2D production container
