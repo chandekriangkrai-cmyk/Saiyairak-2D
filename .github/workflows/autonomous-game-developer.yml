@@ -2,6 +2,7 @@ name: Autonomous Game Developer
 
 on:
   push:
+    branches: [main]
     paths:
       - ".github/workflows/autonomous-game-developer.yml"
   schedule:
@@ -26,7 +27,7 @@ jobs:
       RENDER_URL: ${{ vars.RENDER_URL || 'https://school-time-8zt2.onrender.com' }}
       MAX_AI_CALLS: "3"
     steps:
-      - name: Checkout latest main
+      - name: Checkout triggering branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -39,7 +40,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.2.0
+          bun-version: 1.3.14
 
       - name: Install dependencies
         working-directory: metaverse
