@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM oven/bun:1.3.14-slim AS dependencies
+FROM oven/bun:1.2.0-slim AS dependencies
 WORKDIR /app
 
 # Dependency metadata is copied separately so source edits reuse the install
