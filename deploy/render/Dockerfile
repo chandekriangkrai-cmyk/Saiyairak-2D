@@ -1,7 +1,7 @@
 # Saiyairak 2D single-service production image.
 # Public HTTP, WebSocket, authentication and the Phaser/React frontend share
 # one Render Web Service so the browser can use /api and /socket on one origin.
-FROM oven/bun:1.2.0-slim AS dependencies
+FROM oven/bun:1.3.14-slim AS dependencies
 WORKDIR /app/metaverse
 
 COPY metaverse/package.json metaverse/bun.lock metaverse/.npmrc ./
@@ -28,7 +28,7 @@ FROM source AS web-build
 WORKDIR /app/metaverse/apps/web
 RUN bun run build
 
-FROM oven/bun:1.2.0-slim AS runtime
+FROM oven/bun:1.3.14-slim AS runtime
 RUN apt-get update \
   && apt-get install -y --no-install-recommends nginx \
   && rm -rf /var/lib/apt/lists/* \
