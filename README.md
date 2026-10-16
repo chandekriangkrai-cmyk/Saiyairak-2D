@@ -1,4 +1,4 @@
-# Saiyairak 2D
+# FUN CLASS 2D
 
 > A self-hosted, realtime 2D world for studying, meeting, presenting, playing, and simply being together online.
 
@@ -8,7 +8,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?style=flat-square&logo=typescript&logoColor=white)](#technology-stack)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-ready-2496ed?style=flat-square&logo=docker&logoColor=white)](#docker-setup)
 
-Saiyairak 2D combines the immediacy of a multiplayer game with the practical tools of a virtual workspace. Users create or join shared pixel-art spaces, move through collision-aware maps, chat in realtime, customize their characters, study with persistent timers and leaderboards, share a synchronized whiteboard, and use LiveKit-powered audio, video, screen sharing, and TURN fallback. The application is a TypeScript monorepo with an authoritative WebSocket game server, an Express control plane, PostgreSQL persistence, and a fully self-hosted Docker deployment.
+FUN CLASS 2D combines the immediacy of a multiplayer game with the practical tools of a virtual workspace. Users create or join shared pixel-art spaces, move through collision-aware maps, chat in realtime, customize their characters, study with persistent timers and leaderboards, share a synchronized whiteboard, and use LiveKit-powered audio, video, screen sharing, and TURN fallback. The application is a TypeScript monorepo with an authoritative WebSocket game server, an Express control plane, PostgreSQL persistence, and a fully self-hosted Docker deployment.
 
 ## Table of contents
 
@@ -56,10 +56,10 @@ https://github.com/user-attachments/assets/2355b979-c2e7-484e-ac77-8f062c8f8906
 
 ## Repository structure
 
-Saiyairak 2D is a Bun workspace monorepo. Product code lives under `metaverse/`, cross-service integration tests are kept at the repository root, and deployment infrastructure is separated from application code.
+FUN CLASS 2D is a Bun workspace monorepo. Product code lives under `metaverse/`, cross-service integration tests are kept at the repository root, and deployment infrastructure is separated from application code.
 
 ```text
-Saiyairak 2D/
+FUN CLASS 2D/
 ├── .env.example                    # Safe local-development environment template
 ├── .gitignore
 ├── LICENSE                         # MIT license for source contributions
@@ -305,8 +305,8 @@ Make sure these ports are available for the complete local stack:
 ### Option A: complete Docker stack
 
 ```bash
-git clone https://github.com/chandekriangkrai-cmyk/Saiyairak-2D.git
-cd Saiyairak-2D
+git clone https://github.com/chandekriangkrai-cmyk/FUN-CLASS-2D.git
+cd FUN-CLASS-2D
 cp .env.example .env
 ```
 
@@ -506,17 +506,17 @@ Current result: **63 passing, 0 failing, 63 total** across 10 suites, stable acr
 
 Coverage shown in this README comes from Bun's instrumented fast suite. Jest integration coverage is not currently collected, so combining it into the coverage percentage would be misleading.
 
-## Saiyairak 2D deployment
+## FUN CLASS 2D deployment
 
-The repository now includes a self-contained Render Blueprint for the Saiyairak 2D build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
+The repository now includes a self-contained Render Blueprint for the FUN CLASS 2D build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
 
-[![Deploy Saiyairak 2D to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/Saiyairak-2D)
+[![Deploy FUN CLASS 2D to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/FUN-CLASS-2D)
 
 The free Render configuration is intended for testing/preview: free web services can spin down after inactivity, and free Render Postgres expires after 30 days. Upgrade the database before using the service as a durable production save system.
 
 ## Upstream reference deployment architecture
 
-The following section documents the upstream Saiyairak 2D deployment model inherited by this foundation. It is reference infrastructure, not a claim that this Saiyairak 2D fork is already running on that VPS. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
+The following section documents the upstream FUN CLASS 2D deployment model inherited by this foundation. It is reference infrastructure, not a claim that this FUN CLASS 2D fork is already running on that VPS. The frontend and PostgreSQL database are on the same server as the APIs; Vercel and Neon are not involved.
 
 ### Public routing
 
