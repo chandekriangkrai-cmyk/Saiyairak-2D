@@ -1,5 +1,12 @@
 name: Web Build
 
+permissions:
+  contents: read
+
+concurrency:
+  group: web-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main, ai/dev-loop, "feat/**"]
@@ -10,6 +17,7 @@ on:
 jobs:
   build-web:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: metaverse
@@ -19,11 +27,18 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
+      - name: Generate Prisma client
+        run: bunx prisma generate --config packages/db/prisma.config.ts
+        env:
+          DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+      - name: Run Bun unit and regression tests
+        run: bun test
       - run: bun run --cwd apps/web check-types
       - run: bun run --cwd apps/web build
 
   production-container:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Build Saiyairak 2D production container
