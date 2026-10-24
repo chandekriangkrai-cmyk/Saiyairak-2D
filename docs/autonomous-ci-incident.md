@@ -33,11 +33,14 @@ its SHA-256 remained
 - Production container: built successfully with a temporary BuildKit CA mount
   for the cloud proxy; TLS verification remained enabled and the repository
   Dockerfile was unchanged.
-- Legacy black-box integration suite: 35 passed, 28 failed. Existing tests create
-  regular users then expect admin-only room creation to succeed; this
-  causes 403 responses and subsequent WebSocket setup failures. The suite also
-  expects 400 for an unknown room code, while the API returns 404. These are
-  outside the dependency-installation change; authorization is preserved.
+- Black-box integration suite: 64 passed, 0 failed across 10 suites after
+  repairing stale fixtures. Commit 153e917 restricted room creation to Admin,
+  but fixtures still created ordinary users. Explicit admin fixtures now update
+  only newly created test accounts in a loopback database, then sign in again.
+  A new regression test confirms regular users still receive 403.
+  Commit f0ae2b8 deliberately removed code lookup for security. Tests now assert
+  that the route remains unavailable, including authenticated requests; the
+  removed route was not restored.
 - Use `pnpm test --runInBand` from `tests/`; an extra `--` is interpreted as a
   Jest test-name pattern by this pinned pnpm version.
 

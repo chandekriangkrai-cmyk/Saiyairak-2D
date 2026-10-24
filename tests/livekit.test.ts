@@ -4,6 +4,7 @@ import {
   createRoom,
   createVideoRoom,
   http,
+  makeAdmin,
   makeUser,
   type TestUser,
 } from "./helpers";
@@ -19,7 +20,7 @@ describe("LiveKit access tokens", () => {
   let plainSpaceId = "";
 
   beforeAll(async () => {
-    user = await makeUser("livekit");
+    user = await makeAdmin("livekit");
     videoSpaceId = (await createVideoRoom(user.token, "LiveKit office"))
       .spaceId;
     plainSpaceId = (await createRoom(user.token, "LiveKit library")).spaceId;
