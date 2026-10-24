@@ -30,8 +30,11 @@ its SHA-256 remained
 - Workspace type checks: all 6 participating tasks passed.
 - Workspace build: passed; existing large-chunk warnings remain.
 - Prisma client generation, four database migrations and seed: passed.
+- Production container: built successfully with a temporary BuildKit CA mount
+  for the cloud proxy; TLS verification remained enabled and the repository
+  Dockerfile was unchanged.
 - Legacy black-box integration suite: 35 passed, 28 failed. Existing tests create
-  regular users then expect teacher/admin-only room creation to succeed; this
+  regular users then expect admin-only room creation to succeed; this
   causes 403 responses and subsequent WebSocket setup failures. The suite also
   expects 400 for an unknown room code, while the API returns 404. These are
   outside the dependency-installation change; authorization is preserved.
