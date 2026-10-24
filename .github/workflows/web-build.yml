@@ -26,6 +26,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
+      - name: Test autonomous cycle without external API calls
+        working-directory: .
+        run: python3 -B -m unittest discover -s scripts -p 'test_*.py' -v
       - run: bun install --frozen-lockfile
       - name: Generate Prisma client
         run: bunx prisma generate --config packages/db/prisma.config.ts
@@ -33,7 +36,7 @@ jobs:
           DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
       - name: Run Bun unit and regression tests
         run: bun test
-      - run: bun run --cwd apps/web check-types
+      - run: bun run check-types
       - run: bun run --cwd apps/web build
 
   production-container:

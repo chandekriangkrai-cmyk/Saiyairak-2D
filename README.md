@@ -284,7 +284,7 @@ The complete Docker workflow is the easiest way to run the project.
 - **Git**
 - **Docker Engine** with the **Docker Compose v2** plugin
 - **GNU Make** for the documented shortcuts
-- **Bun 1.2+** for host development; the current environment and production image use Bun 1.3.14
+- **Bun 1.3.14** for host development; the current environment and production image use Bun 1.3.14
 - **Node.js 18+ and pnpm** only when running the separate Jest integration suite
 - A Linux host is recommended for the local LiveKit configuration because it uses host networking
 
@@ -494,7 +494,7 @@ Start the complete local stack first, then run:
 AUTH_RATE_LIMIT_MAX=100000 make docker-up
 cd tests
 pnpm install --frozen-lockfile
-pnpm test -- --runInBand
+pnpm test --runInBand
 ```
 
 `AUTH_RATE_LIMIT_MAX` matters here.

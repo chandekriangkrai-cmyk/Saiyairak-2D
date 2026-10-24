@@ -6,7 +6,7 @@
     "./client": "./client.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "1.4.3",
     "@types/pg": "^8.20.0"
   },
   "peerDependencies": {
