@@ -1,7 +1,7 @@
 import {
   createRoom,
   joinSpace,
-  makeUser,
+  makeAdmin,
   nextOfType,
   openSocket,
   sendWs,
@@ -24,7 +24,7 @@ describe("Websocket authentication", () => {
   let spaceId = "";
 
   beforeAll(async () => {
-    user = await makeUser("wsauth");
+    user = await makeAdmin("wsauth");
     const room = await createRoom(user.token, "WS auth room");
     spaceId = room.spaceId;
   });

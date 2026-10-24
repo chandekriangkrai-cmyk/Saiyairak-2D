@@ -17,10 +17,6 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 KEY = os.getenv("GEMINI_API_KEY", "")
 MAX_CALLS = int(os.getenv("MAX_AI_CALLS", "3"))
 
-if not KEY:
-    print("GEMINI_API_KEY is not configured; safe no-op.")
-    sys.exit(0)
-
 def sh(cmd, cwd=ROOT, check=True):
     p = subprocess.run(cmd, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if check and p.returncode:
@@ -117,9 +113,13 @@ def test():
     sh(["git","diff","--check"])
 
 def main():
+    if not KEY:
+        print("GEMINI_API_KEY is not configured; autonomous development cannot run.")
+        return 1
+
     if sh(["git","status","--porcelain"]).strip():
         print("Dirty checkout detected; refusing autonomous edits.")
-        return
+        return 1
 
     calls = 0
     task = """Inspect the current game and implement the single most useful low-risk improvement you can justify from the codebase.
@@ -160,6 +160,7 @@ Do not broaden scope. Return a minimal patch."""
     except Exception as e:
         print("AUTONOMOUS CYCLE STOPPED:", str(e)[-12000:])
         sh(["git","reset","--hard","HEAD"], check=False)
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

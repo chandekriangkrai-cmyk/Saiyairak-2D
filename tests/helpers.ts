@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+import path from "node:path";
 import axios2 from "axios";
 
 export const BACKEND_URL = "http://localhost:3000";
@@ -60,6 +62,41 @@ export async function makeUser(prefix = "user"): Promise<TestUser> {
     userId: signup.data.userId as string,
     token: signin.data.token as string,
   };
+}
+
+// Room creation is admin-only. Provision only explicit test administrators,
+// and refuse database mutations against non-local environments.
+export async function makeAdmin(prefix = "admin"): Promise<TestUser> {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (
+    !databaseUrl ||
+    !["localhost", "127.0.0.1", "[::1]"].includes(new URL(databaseUrl).hostname)
+  ) {
+    throw new Error(
+      "Admin fixtures require DATABASE_URL for a local test database",
+    );
+  }
+  const user = await makeUser(prefix);
+  execFileSync(
+    "bun",
+    [
+      "-e",
+      `
+    import client from "./packages/db/client.ts";
+    await client.user.update({where: {id: process.argv[1]}, data: {role: "Admin"}});
+    await client.$disconnect();
+    process.exit(0);
+  `,
+      user.userId,
+    ],
+    { cwd: path.resolve(__dirname, "../metaverse"), timeout: 10000 },
+  );
+  const signin = await http.post(`${BACKEND_URL}/api/v1/signin`, {
+    username: user.username,
+    password: TEST_PASSWORD,
+  });
+  if (signin.status !== 200) throw new Error("Admin fixture signin failed");
+  return { ...user, token: signin.data.token };
 }
 
 export async function getLibraryMapId(): Promise<string> {

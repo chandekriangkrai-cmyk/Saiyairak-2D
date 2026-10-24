@@ -4,6 +4,7 @@ import {
   createRoom,
   getLibraryMapId,
   http,
+  makeAdmin,
   makeUser,
   type TestUser,
 } from "./helpers";
@@ -16,9 +17,18 @@ describe("Rooms", () => {
   let mapId = "";
 
   beforeAll(async () => {
-    user = await makeUser();
+    user = await makeAdmin();
     otherUser = await makeUser();
     mapId = await getLibraryMapId();
+  });
+
+  test("Regular users cannot create rooms", async () => {
+    const response = await http.post(
+      `${BACKEND_URL}/api/v1/space`,
+      { name: "Forbidden room", mapId },
+      authHeader(otherUser.token),
+    );
+    expect(response.status).toBe(403);
   });
 
   test("Creating a room requires a template", async () => {
@@ -41,38 +51,37 @@ describe("Rooms", () => {
     expect(response.data.code).toMatch(/^[A-Z2-9]{6}$/);
   });
 
-  test("A room can be found by its join code", async () => {
+  test("The removed code lookup stays unavailable to authenticated users", async () => {
     const created = await createRoom(user.token, "Code room");
 
     const response = await http.get(
       `${BACKEND_URL}/api/v1/space/code/${created.code}`,
       authHeader(user.token),
     );
-    expect(response.status).toBe(200);
-    expect(response.data.spaceId).toBe(created.spaceId);
+    expect(response.status).toBe(404);
 
     const lower = await http.get(
       `${BACKEND_URL}/api/v1/space/code/${created.code.toLowerCase()}`,
       authHeader(user.token),
     );
-    expect(lower.data.spaceId).toBe(created.spaceId);
+    expect(lower.status).toBe(404);
   });
 
-  test("An unknown join code returns 400", async () => {
+  test("An unknown join code returns 404", async () => {
     const response = await http.get(
       `${BACKEND_URL}/api/v1/space/code/XXXXXX`,
       authHeader(user.token),
     );
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
   });
 
-  test("Looking up a join code requires authentication", async () => {
+  test("The removed code lookup stays unavailable without authentication", async () => {
     const created = await createRoom(user.token, "Guarded code room");
 
     const response = await http.get(
       `${BACKEND_URL}/api/v1/space/code/${created.code}`,
     );
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(404);
   });
 
   test("Room details include name, code, map image, and dimensions", async () => {

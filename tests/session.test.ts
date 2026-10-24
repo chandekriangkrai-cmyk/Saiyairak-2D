@@ -1,6 +1,7 @@
 import {
   createRoom,
   joinSpace,
+  makeAdmin,
   makeUser,
   nextOfType,
   openSocket,
@@ -17,7 +18,7 @@ describe("Room roster lifecycle", () => {
   let spaceId = "";
 
   beforeAll(async () => {
-    alice = await makeUser("session-alice");
+    alice = await makeAdmin("session-alice");
     observer = await makeUser("session-observer");
     const room = await createRoom(alice.token, "Session room");
     spaceId = room.spaceId;
