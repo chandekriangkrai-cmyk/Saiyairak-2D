@@ -109,6 +109,7 @@ export default function Arena() {
         const destination = spaces.find(
           (space) =>
             space.id === target ||
+            space.code === target ||
             space.name.trim().toLowerCase() === target.trim().toLowerCase(),
         );
         if (destination && destination.id !== spaceId) {
@@ -122,7 +123,7 @@ export default function Arena() {
     return () => {
       EventBus.off(SpaceEvent.RoomPortal, enterRoomPortal);
     };
-  }, [navigate]);
+  }, [navigate, spaceId]);
 
   useEffect(() => {
     const openTabletMenu = (target: { type?: string }) => {

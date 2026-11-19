@@ -90,6 +90,13 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       assert.equal(Math.abs(next.x - previous.x) + Math.abs(next.y - previous.y), 1);
       previous = next;
     }
+    if (!touch) {
+      const library = spaces.find(space => space.code === 'LIBRARY');
+      assert.ok(library);
+      await hold('ArrowRight', 6500);
+      await page.waitForURL(base + '/space/' + library.id, { timeout: 12000 });
+      console.log('East classroom doorway opened the Study Library');
+    }
     assert.deepEqual(errors, []);
     console.log(mode + ' PASS: student aisle, teacher desk, adjacent WebSocket steps, input release' + (touch ? ' and touch cancellation' : ''));
   } finally { await browser.close(); }
