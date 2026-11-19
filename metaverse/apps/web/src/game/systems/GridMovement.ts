@@ -1,4 +1,4 @@
-import Phaser from "phaser";
+import type Phaser from "phaser";
 import type { TileCoord } from "../config/spaces";
 import type { CollisionGrid } from "./CollisionGrid";
 
@@ -11,12 +11,15 @@ const DELTAS: Record<Direction, TileCoord> = {
   right: { x: 1, y: 0 },
 };
 
-const DEFAULT_SPEED_TILES_PER_SECOND = 4.25;
+const SPEED_TILES_PER_SECOND = 4.25;
+// A long frame must never cross more than one tile in a single server move.
+const MAX_FRAME_DELTA_MS = 100;
 
 export type GridMovementHooks = {
   onWalk?: (dir: Direction) => void;
   onFace?: (dir: Direction) => void;
   onIdle?: (facing: Direction) => void;
+  onTileChange?: () => void;
 };
 
 /** Smooth top-down movement while preserving the existing public API. */
@@ -25,11 +28,9 @@ export class GridMovement {
   private worldY: number;
   private facingDir: Direction = "down";
   private walking = false;
-  private lastWalkHookAt = 0;
-  private readonly speedTilesPerSecond = DEFAULT_SPEED_TILES_PER_SECOND;
 
   constructor(
-    private scene: Phaser.Scene,
+    _scene: Phaser.Scene,
     private grid: CollisionGrid,
     private target: Phaser.GameObjects.Container,
     private tileSize: number,
@@ -55,84 +56,57 @@ export class GridMovement {
 
   update(intent: Direction | null, deltaMs = 16.67): void {
     if (!intent) {
-      if (this.walking) {
-        this.walking = false;
-        this.hooks.onIdle?.(this.facingDir);
-      }
+      if (this.walking) this.hooks.onIdle?.(this.facingDir);
+      this.walking = false;
       return;
     }
+    if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
 
-    if (intent !== this.facingDir) {
-      this.facingDir = intent;
-      this.hooks.onFace?.(intent);
-    }
-
-    const distance =
-      (this.tileSize * this.speedTilesPerSecond * Math.max(0, deltaMs)) / 1000;
-    const delta = DELTAS[intent];
-    const previousX = this.worldX;
-    const previousY = this.worldY;
-
-    const nextX = this.worldX + delta.x * distance;
-    if (this.canOccupy(nextX, this.worldY)) this.worldX = nextX;
-
-    const nextY = this.worldY + delta.y * distance;
-    if (this.canOccupy(this.worldX, nextY)) this.worldY = nextY;
-
-    const moved = this.worldX !== previousX || this.worldY !== previousY;
-    this.snapToWorld();
-
-    if (moved) {
-      this.walking = true;
-      const now = this.scene.time.now;
-      if (now - this.lastWalkHookAt >= 50) {
-        this.lastWalkHookAt = now;
-        this.hooks.onWalk?.(intent);
-      }
-    } else {
-      this.walking = false;
-      this.hooks.onFace?.(intent);
-    }
+    const elapsed = Math.min(deltaMs, MAX_FRAME_DELTA_MS);
+    const distance = (this.tileSize * SPEED_TILES_PER_SECOND * elapsed) / 1000;
+    this.advance(intent, distance);
   }
 
   step(dir: Direction): boolean {
+    return this.advance(dir, this.tileSize * 0.25);
+  }
+
+  private advance(dir: Direction, distance: number): boolean {
+    const turned = this.facingDir !== dir;
     this.facingDir = dir;
-    this.hooks.onFace?.(dir);
-    const distance = this.tileSize * 0.25;
     const delta = DELTAS[dir];
     const nextX = this.worldX + delta.x * distance;
     const nextY = this.worldY + delta.y * distance;
-    if (!this.canOccupy(nextX, nextY)) return false;
+    const previous = this.tile;
+    const next = this.worldToTile(nextX, nextY);
+    if (this.grid.isBlocked(next.x, next.y)) {
+      if (turned || this.walking) this.hooks.onFace?.(dir);
+      this.walking = false;
+      return false;
+    }
+
     this.worldX = nextX;
     this.worldY = nextY;
-    this.walking = true;
     this.snapToWorld();
-    this.hooks.onWalk?.(dir);
+    if (turned || !this.walking) this.hooks.onWalk?.(dir);
+    this.walking = true;
+    if (next.x !== previous.x || next.y !== previous.y) this.hooks.onTileChange?.();
     return true;
   }
 
   forceSetTile(tile: TileCoord): void {
     this.worldX = (tile.x + 0.5) * this.tileSize;
     this.worldY = (tile.y + 1) * this.tileSize;
+    if (this.walking) this.hooks.onIdle?.(this.facingDir);
     this.walking = false;
     this.snapToWorld();
-  }
-
-  private canOccupy(worldX: number, worldY: number): boolean {
-    // The player anchor sits on the lower edge of its tile. Sampling four
-    // corners around that anchor incorrectly touches the neighbouring row and
-    // can trap the player whenever a desk/wall is directly above or below.
-    // Movement is tile-based, so the destination tile itself is the authoritative
-    // collision boundary; this still prevents walking through blocked furniture
-    // while allowing the player to use the aisles around it.
-    const tile = this.worldToTile(worldX, worldY);
-    return !this.grid.isBlocked(tile.x, tile.y);
   }
 
   private worldToTile(worldX: number, worldY: number): TileCoord {
     return {
       x: Math.floor(worldX / this.tileSize),
-      y: Math.floor(worldY / this.tileSize) - 1,
+      // The sprite anchor is half a tile below the logical tile center.
+      y: Math.floor(worldY / this.tileSize - 0.5),
     };
   }
 

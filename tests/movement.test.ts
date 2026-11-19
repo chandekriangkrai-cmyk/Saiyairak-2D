@@ -1,10 +1,13 @@
 import {
+  BACKEND_URL,
   createRoom,
+  http,
   joinSpace,
   makeAdmin,
   makeUser,
   nextOfType,
   openSocket,
+  sendWs,
   sleep,
   type Socket,
   type TestUser,
@@ -61,4 +64,35 @@ describe("Websocket movement", () => {
     expect(joined).not.toBeNull();
     s3.ws.close();
   });
+});
+
+test("Classroom aisle accepts moves while the teacher desk remains solid", async () => {
+  const { data } = await http.get(`${BACKEND_URL}/api/v1/space/official`);
+  const classroom = data.spaces.find((space: { code: string }) => space.code === "CLASS01");
+  const walker = await makeUser("classroom-walker");
+  const observer = await makeUser("classroom-observer");
+  const mover = await openSocket();
+  const peer = await openSocket();
+  try {
+    joinSpace(mover.ws, classroom.id, walker.token);
+    expect((await nextOfType(mover.messages, "space-joined")).payload.spawn).toEqual({ x: 18, y: 14 });
+    joinSpace(peer.ws, classroom.id, observer.token);
+    await nextOfType(peer.messages, "space-joined");
+
+    // The legacy server grid blocked row 19 in this otherwise open aisle.
+    const aisle = [15, 16, 17, 18, 19, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10];
+    for (const y of aisle) sendWs(mover.ws, "move", { x: 18, y });
+    sendWs(mover.ws, "move", { x: 18, y: 9 });
+    const rejection = await nextOfType(mover.messages, "movement-rejected");
+    expect(rejection?.payload).toEqual({ x: 18, y: 10 });
+    expect(mover.messages.some(message => message.type === "movement-rejected")).toBe(false);
+    for (const y of aisle) {
+      const observed = await nextOfType(peer.messages, "movement");
+      expect(observed?.payload).toMatchObject({ userId: walker.userId, x: 18, y });
+    }
+    expect(peer.messages.some(message => message.type === "movement")).toBe(false);
+  } finally {
+    mover.ws.close();
+    peer.ws.close();
+  }
 });

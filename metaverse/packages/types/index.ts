@@ -21,6 +21,16 @@ export const SPACE_CAPABILITIES: Record<string, SpaceCapabilities> = {
   "/assets/spaces/hide-and-seek/space.webp": { hideAndSeek: true },
 };
 
+export const ORIGINAL_CLASSROOM_IMAGE = "/assets/spaces/classroom/original-classroom.png";
+
+export function spaceCollisionPath(mapImage: string): string {
+  const directory = mapImage.slice(0, mapImage.lastIndexOf("/"));
+  const filename = mapImage === ORIGINAL_CLASSROOM_IMAGE
+    ? "original-collision.json"
+    : "collision.json";
+  return `${directory}/${filename}`;
+}
+
 export function isVideoEnabled(mapImage: string | null | undefined): boolean {
   return !!mapImage && SPACE_CAPABILITIES[mapImage]?.video === true;
 }
