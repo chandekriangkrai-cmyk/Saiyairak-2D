@@ -305,8 +305,8 @@ Make sure these ports are available for the complete local stack:
 ### Option A: complete Docker stack
 
 ```bash
-git clone https://github.com/chandekriangkrai-cmyk/FUN-CLASS-2D.git
-cd FUN-CLASS-2D
+git clone https://github.com/chandekriangkrai-cmyk/Saiyairak-2D.git
+cd Saiyairak-2D
 cp .env.example .env
 ```
 
@@ -512,7 +512,7 @@ Coverage shown in this README comes from Bun's instrumented fast suite. Jest int
 
 The repository now includes a self-contained Render Blueprint for the FUN CLASS 2D build. It deploys the web frontend, HTTP API/authentication, WebSocket realtime server, and PostgreSQL on one public web service so `/api` and `/socket` stay on the same origin. The English Learning App remains a static asset and is not rebuilt or modified by the deployment layer.
 
-[![Deploy FUN CLASS 2D to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/FUN-CLASS-2D)
+[![Deploy FUN CLASS 2D to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chandekriangkrai-cmyk/Saiyairak-2D)
 
 The free Render configuration is intended for testing/preview: free web services can spin down after inactivity, and free Render Postgres expires after 30 days. Upgrade the database before using the service as a durable production save system.
 

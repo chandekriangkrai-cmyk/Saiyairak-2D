@@ -1,5 +1,6 @@
 import { readFileSync, statSync } from "fs";
 import path from "path";
+import { spaceCollisionPath } from "@repo/types";
 
 const WEB_PUBLIC = path.resolve(import.meta.dir, "../web/public");
 
@@ -14,8 +15,7 @@ const cache = new Map<string, { mtimeMs: number; data: CollisionData }>();
 
 export function loadCollision(mapImage: string | null): CollisionData | null {
   if (!mapImage) return null;
-  const dir = mapImage.slice(0, mapImage.lastIndexOf("/"));
-  const file = path.join(WEB_PUBLIC, dir, "collision.json");
+  const file = path.join(WEB_PUBLIC, spaceCollisionPath(mapImage));
 
   let mtimeMs: number;
   try {

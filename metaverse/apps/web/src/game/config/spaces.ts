@@ -3,6 +3,8 @@ import {
   isVideoEnabled,
   isWhiteboardEnabled,
   isHideAndSeekEnabled,
+  ORIGINAL_CLASSROOM_IMAGE,
+  spaceCollisionPath,
 } from "@repo/types";
 
 export const TILE_SIZE = 32;
@@ -115,8 +117,8 @@ export const SPACES: Record<string, SpaceConfig> = {
   },
   classroom: {
     id: "classroom",
-    imagePath: "/assets/spaces/classroom/original-classroom.png",
-    collisionPath: "/assets/spaces/classroom/original-collision.json?door=3",
+    imagePath: ORIGINAL_CLASSROOM_IMAGE,
+    collisionPath: `${spaceCollisionPath(ORIGINAL_CLASSROOM_IMAGE)}?v=4`,
     tileSize: 40,
     // Start clearly inside the classroom on the open lower-center aisle.
     spawnTile: { x: 20, y: 17 },
@@ -155,7 +157,7 @@ export function resolveSpaceConfig(mapImage: string | null): SpaceConfig {
   return {
     id: "custom",
     imagePath: mapImage,
-    collisionPath: `${mapImage.slice(0, mapImage.lastIndexOf("/"))}/collision.json`,
+    collisionPath: spaceCollisionPath(mapImage),
     tileSize: TILE_SIZE,
     spawnTile: { x: 1, y: 1 },
     zones: [],

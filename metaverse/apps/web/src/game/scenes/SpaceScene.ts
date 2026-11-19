@@ -20,13 +20,6 @@ const DEPTH_FOREGROUND = 20;
 const MOVEMENT_KEYS = "W,A,S,D,UP,DOWN,LEFT,RIGHT,SPACE,SHIFT";
 const TABLET_TILE: TileCoord = { x: 19, y: 9 };
 
-// Classroom is intentionally a self-contained play space. Keep the player
-// inside the room while leaving the furniture collision from the imported map.
-const CLASSROOM_BOUNDS = { left: 11, right: 24, top: 9, bottom: 20 } as const;
-// In the classroom, desks and chairs are intentionally walk-through.
-// Only the teacher's desk at the front remains solid.
-const CLASSROOM_TEACHER_DESK = { left: 17, right: 20, top: 9, bottom: 9 } as const;
-
 type InteractionTarget = TileCoord & {
   type: "tablet";
   label: string;
@@ -81,10 +74,6 @@ export class SpaceScene extends Phaser.Scene {
     const rows = Math.ceil(image.height / tileSize);
     this.grid = new CollisionGrid(cols, rows, this.collisionSource);
 
-    if (this.spaceConfig.id === "classroom") {
-      this.configureClassroomWalkability();
-    }
-
     const spawn = this.resolveSpawn(this.spaceConfig.spawnTile);
     this.player = new Player(this, 0, 0, tileSize);
     this.player.setDepth(DEPTH_PLAYER);
@@ -95,10 +84,8 @@ export class SpaceScene extends Phaser.Scene {
       tileSize,
       spawn,
       {
-        onWalk: (dir) => {
-          this.player.playWalk(dir);
-          this.onLocalStep();
-        },
+        onWalk: (dir) => this.player.playWalk(dir),
+        onTileChange: () => this.onLocalStep(),
         onFace: (dir) => this.player.faceIdle(dir),
         onIdle: (dir) => this.player.faceIdle(dir),
       },
@@ -186,47 +173,6 @@ export class SpaceScene extends Phaser.Scene {
     } else {
       keyboard.resetKeys();
       keyboard.removeCapture(MOVEMENT_KEYS);
-    }
-  }
-
-  private configureClassroomWalkability(): void {
-    // Do not inherit the old furniture collision map for this room.
-    // Students can walk through desks/chairs freely; only the room boundary
-    // and the teacher desk at the front are solid.
-    for (let y = 0; y < this.grid.rows; y++) {
-      for (let x = 0; x < this.grid.cols; x++) {
-        const inside =
-          x >= CLASSROOM_BOUNDS.left &&
-          x <= CLASSROOM_BOUNDS.right &&
-          y >= CLASSROOM_BOUNDS.top &&
-          y <= CLASSROOM_BOUNDS.bottom;
-        this.grid.setBlocked(x, y, !inside);
-      }
-    }
-
-    for (let y = CLASSROOM_TEACHER_DESK.top; y <= CLASSROOM_TEACHER_DESK.bottom; y++) {
-      for (let x = CLASSROOM_TEACHER_DESK.left; x <= CLASSROOM_TEACHER_DESK.right; x++) {
-        this.grid.setBlocked(x, y, true);
-      }
-    }
-
-    // The tablet sits on the teacher desk, so it must remain non-walkable too.
-    this.grid.setBlocked(TABLET_TILE.x, TABLET_TILE.y, true);
-
-    // The classroom exits through the real door on the right-hand wall.
-    // Keep the wall solid everywhere else, but open the doorway tile so the
-    // player can physically walk through it before the room portal fires.
-    for (let y = 10; y <= 16; y++) {
-      this.grid.setBlocked(25, y, false);
-    }
-
-    // The bottom-center doorway is the classroom's physical connection to the
-    // central school hub. Keep the rest of the lower edge closed so the player
-    // cannot walk outside the room artwork.
-    for (let y = 20; y < this.grid.rows; y++) {
-      for (let x = CLASSROOM_BOUNDS.left; x <= CLASSROOM_BOUNDS.right; x++) {
-        if (x < 17 || x > 21) this.grid.setBlocked(x, y, true);
-      }
     }
   }
 

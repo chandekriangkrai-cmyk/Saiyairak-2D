@@ -275,12 +275,13 @@ export class CollisionEditor {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "collision.json";
+    const assetPath = this.config.collisionPath.split("?")[0]!;
+    anchor.download = assetPath.slice(assetPath.lastIndexOf("/") + 1);
     anchor.click();
     URL.revokeObjectURL(url);
     console.log(
-      `collision.json: ${this.grid.changedSinceLoad()} tile(s) changed since load - ` +
-        `commit it as public/assets/spaces/${this.config.id}/collision.json`,
+      `${anchor.download}: ${this.grid.changedSinceLoad()} tile(s) changed since load - ` +
+        `commit it as public${assetPath}`,
     );
   }
 }
