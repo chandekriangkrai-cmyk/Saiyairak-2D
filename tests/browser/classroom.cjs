@@ -80,10 +80,15 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(sent.length, afterRelease, 'Released input must stop movement');
     if (touch) {
       await hold('ArrowDown', 900, 'touchCancel');
+      // CDP can resolve before the DOM handler and buffered WS frames reach the test.
+      await joystick.getByText('·', { exact: true }).waitFor();
+      await pause(150);
       const afterCancel = sent.length;
+      const canceledTile = await saved();
       await pause(600);
       assert.equal(sent.length, afterCancel, 'Canceled touch must stop movement');
-      assert.ok((await saved()).y > 10);
+      assert.deepEqual(await saved(), canceledTile);
+      assert.ok(canceledTile.y > 10);
     }
     let previous = spawn;
     for (const next of sent) {
